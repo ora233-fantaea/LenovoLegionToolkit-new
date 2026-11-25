@@ -3959,4 +3959,154 @@
   <data name="Yes" xml:space="preserve">
     <value>是</value>
   </data>
+  <data name="MainWindow_NavigationItem_FanCurve" xml:space="preserve">
+    <value>风扇曲线</value>
+  </data>
+  <data name="FanCurvePage_Title" xml:space="preserve">
+    <value>风扇控制曲线</value>
+  </data>
+  <data name="FanCurvePage_Enable_Title" xml:space="preserve">
+    <value>启用自定义风扇控制</value>
+  </data>
+  <data name="FanCurvePage_Enable_Message" xml:space="preserve">
+    <value>根据实时温度动态调节风扇转速，或设置自定义固定转速。需要在自定义电源模式下生效。</value>
+  </data>
+  <data name="FanCurvePage_Mode_Title" xml:space="preserve">
+    <value>控制模式</value>
+  </data>
+  <data name="FanCurvePage_Mode_Message" xml:space="preserve">
+    <value>选择按温度曲线自动调控风扇转速，或锁定为自定义固定转速。</value>
+  </data>
+  <data name="FanCurvePage_Mode_Curve" xml:space="preserve">
+    <value>按温度曲线调控</value>
+  </data>
+  <data name="FanCurvePage_Mode_Fixed" xml:space="preserve">
+    <value>自定义固定转速</value>
+  </data>
+  <data name="FanCurvePage_FixedSpeed_Title" xml:space="preserve">
+    <value>自定义固定转速</value>
+  </data>
+  <data name="FanCurvePage_FixedSpeed_Message" xml:space="preserve">
+    <value>手动设定固定风扇转速档位。触发高温保护阈值时仍会自动拉满至 100%。</value>
+  </data>
+  <data name="FanCurvePage_Curve_Title" xml:space="preserve">
+    <value>温控曲线</value>
+  </data>
+  <data name="FanCurvePage_Curve_Message" xml:space="preserve">
+    <value>拖动节点调节（默认 5°C / 5% 网格吸附，按住 Shift 精调）；双击空白处新增节点，右键节点或按 Delete 删除。</value>
+  </data>
+  <data name="FanCurvePage_Preset_Quiet" xml:space="preserve">
+    <value>静音</value>
+  </data>
+  <data name="FanCurvePage_Preset_Balanced" xml:space="preserve">
+    <value>均衡</value>
+  </data>
+  <data name="FanCurvePage_Preset_Performance" xml:space="preserve">
+    <value>性能</value>
+  </data>
+  <data name="FanCurvePage_SelectedPoint_Temperature" xml:space="preserve">
+    <value>温度 (°C)</value>
+  </data>
+  <data name="FanCurvePage_SelectedPoint_Speed" xml:space="preserve">
+    <value>转速 (%)</value>
+  </data>
+  <data name="FanCurvePage_AddPoint" xml:space="preserve">
+    <value>添加节点</value>
+  </data>
+  <data name="FanCurvePage_RemovePoint" xml:space="preserve">
+    <value>删除节点</value>
+  </data>
+  <data name="FanCurvePage_Source_Title" xml:space="preserve">
+    <value>温控传感器来源</value>
+  </data>
+  <data name="FanCurvePage_Source_Message" xml:space="preserve">
+    <value>选择用于驱动风扇转速调控的温度传感器。</value>
+  </data>
+  <data name="FanCurvePage_Source_Max" xml:space="preserve">
+    <value>CPU 与 GPU 最高温</value>
+  </data>
+  <data name="FanCurvePage_Source_CPU" xml:space="preserve">
+    <value>仅 CPU</value>
+  </data>
+  <data name="FanCurvePage_Source_GPU" xml:space="preserve">
+    <value>仅 GPU</value>
+  </data>
+  <data name="FanCurvePage_Hysteresis_Title" xml:space="preserve">
+    <value>迟滞温度 (°C)</value>
+  </data>
+  <data name="FanCurvePage_Hysteresis_Message" xml:space="preserve">
+    <value>风扇降速前需要下降的温度缓冲值，可避免风扇在临界温度附近频繁波动。</value>
+  </data>
+  <data name="FanCurvePage_Interval_Title" xml:space="preserve">
+    <value>检测间隔 (秒)</value>
+  </data>
+  <data name="FanCurvePage_Interval_Message" xml:space="preserve">
+    <value>每隔多少秒读取一次温度并更新风扇转速。</value>
+  </data>
+  <data name="FanCurvePage_CriticalTemp_Title" xml:space="preserve">
+    <value>高温保护阈值 (°C)</value>
+  </data>
+  <data name="FanCurvePage_CriticalTemp_Message" xml:space="preserve">
+    <value>当温度达到或超过该阈值时，强制将风扇转速提升至 100% 以防过热。</value>
+  </data>
+  <data name="FanCurvePage_Status_Active" xml:space="preserve">
+    <value>运行中</value>
+  </data>
+  <data name="FanCurvePage_Status_Disabled" xml:space="preserve">
+    <value>未启用</value>
+  </data>
+  <data name="FanCurvePage_Status_InactivePowerMode" xml:space="preserve">
+    <value>等待切换至自定义模式</value>
+  </data>
+  <data name="FanCurvePage_Status_InactiveFanFullSpeed" xml:space="preserve">
+    <value>已暂停（全速模式）</value>
+  </data>
+  <data name="FanCurvePage_Status_Critical" xml:space="preserve">
+    <value>高温保护触发 (100%)</value>
+  </data>
+  <data name="FanCurvePage_Status_Error" xml:space="preserve">
+    <value>异常</value>
+  </data>
+  <data name="FanCurvePage_PowerModeWarning_Title" xml:space="preserve">
+    <value>需要自定义电源模式</value>
+  </data>
+  <data name="FanCurvePage_PowerModeWarning_Message" xml:space="preserve">
+    <value>联想硬件仅允许在自定义电源模式下修改风扇转速表。请切换至自定义模式以使曲线生效。</value>
+  </data>
+  <data name="FanCurvePage_SwitchToCustomMode" xml:space="preserve">
+    <value>切换至自定义模式</value>
+  </data>
+  <data name="FanCurvePage_FullSpeedWarning_Title" xml:space="preserve">
+    <value>当前已开启风扇全速模式</value>
+  </data>
+  <data name="FanCurvePage_FullSpeedWarning_Message" xml:space="preserve">
+    <value>请在自定义模式设置中关闭“最大风扇转速”，自定义风扇曲线才会生效。</value>
+  </data>
+  <data name="FanCurvePage_Live_CpuTemp" xml:space="preserve">
+    <value>CPU 温度</value>
+  </data>
+  <data name="FanCurvePage_Live_GpuTemp" xml:space="preserve">
+    <value>GPU 温度</value>
+  </data>
+  <data name="FanCurvePage_Live_FanSpeed" xml:space="preserve">
+    <value>实时转速</value>
+  </data>
+  <data name="FanCurvePage_Live_Target" xml:space="preserve">
+    <value>目标档位</value>
+  </data>
+  <data name="GodModeSettingsWindow_SoftwareFanCurveActive_Title" xml:space="preserve">
+    <value>软件风扇控制曲线已启用</value>
+  </data>
+  <data name="GodModeSettingsWindow_SoftwareFanCurveActive_Message" xml:space="preserve">
+    <value>当前风扇转速正由“风扇曲线”页面按温度动态接管。下方的 BIOS 风扇曲线仅在关闭软件风扇控制后作为默认回退方案。</value>
+  </data>
+  <data name="FanCurvePage_UnsavedChanges" xml:space="preserve">
+    <value>有未应用的更改</value>
+  </data>
+  <data name="FanCurvePage_Revert" xml:space="preserve">
+    <value>撤销</value>
+  </data>
+  <data name="FanCurvePage_Applied_Title" xml:space="preserve">
+    <value>风扇曲线已应用</value>
+  </data>
 </root>

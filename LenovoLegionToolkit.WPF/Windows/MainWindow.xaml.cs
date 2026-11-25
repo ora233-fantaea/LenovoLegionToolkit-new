@@ -311,6 +311,7 @@ public partial class MainWindow
     private async Task AddNavigationItemsAsync()
     {
         await _navigationStore.TryAddAsync("dashboard", typeof(DashboardPage), Resource.MainWindow_NavigationItem_Dashboard, SymbolRegular.Home24);
+        await _navigationStore.TryAddAsync("fanCurve", typeof(FanCurvePage), Resource.MainWindow_NavigationItem_FanCurve, SymbolRegular.Temperature24, IsFanCurveSupportedAsync);
         await _navigationStore.TryAddAsync("keyboardBacklight", typeof(KeyboardBacklightPage), Resource.MainWindow_NavigationItem_Keyboard, SymbolRegular.Keyboard24, IsKeyboardBacklightSupportedAsync);
         await _navigationStore.TryAddAsync("lampArrayKeyboardBacklight", typeof(LampArrayRGBKeyboardPage), Resource.MainWindow_NavigationItem_Keyboard, SymbolRegular.Keyboard24, IsLampArrayKeyboardSupportedAsync);
         await _navigationStore.TryAddAsync("battery", typeof(BatteryPage), Resource.MainWindow_NavigationItem_Battery, SymbolRegular.BatteryCheckmark24, IsBatterySupportedAsync);
@@ -318,6 +319,9 @@ public partial class MainWindow
         await _navigationStore.TryAddAsync("macro", typeof(MacroPage), Resource.MainWindow_NavigationItem_Macro, SymbolRegular.ReceiptPlay24);
         await _navigationStore.TryAddAsync("packages", typeof(PackagesPage), Resource.MainWindow_NavigationItem_Packages, SymbolRegular.Box24);
     }
+
+    private static async Task<bool> IsFanCurveSupportedAsync()
+        => AppFlags.Instance.Debug || await FanCurvePage.IsSupportedAsync();
 
     private static async Task<bool> IsKeyboardBacklightSupportedAsync()
         => AppFlags.Instance.Debug || await KeyboardBacklightPage.IsSupportedAsync();

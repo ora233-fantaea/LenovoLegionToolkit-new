@@ -26,6 +26,7 @@ public partial class GodModeSettingsWindow
 {
     private readonly PowerModeFeature _powerModeFeature = IoCContainer.Resolve<PowerModeFeature>();
     private readonly GodModeController _godModeController = IoCContainer.Resolve<GodModeController>();
+    private readonly FanCurveSettings _fanCurveSettings = IoCContainer.Resolve<FanCurveSettings>();
 
     private Control? FanControl;
 
@@ -96,6 +97,7 @@ public partial class GodModeSettingsWindow
             _state = await stateTask;
             _defaults = await defaultsTask;
             UpdateSoftwareWarnings(await softwareTask);
+            _softwareFanCurveWarningInfoBar.IsOpen = _fanCurveSettings.Store.Enabled;
             _capabilityWarningInfoBar.IsOpen = _godModeController.HasCapabilityErrors();
 
             if (_state is null || _defaults is null)

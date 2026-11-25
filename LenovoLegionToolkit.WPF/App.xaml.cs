@@ -280,6 +280,7 @@ public partial class App
             }
 
             await SafeInitAsync(InitAIControllerAsync, "AI Controller");
+            await SafeInitAsync(InitFanCurveControllerAsync, "Fan Curve Controller");
             await SafeInitAsync(InitHWiNFOAsync, "HWiNFO Integration");
             await SafeInitAsync(InitIpcServerAsync, "IPC Server");
         });
@@ -398,6 +399,7 @@ public partial class App
     public async Task ShutdownAsync()
     {
         await SafeExecuteAsync<AIController>(c => c.StopAsync());
+        await SafeExecuteAsync<FanCurveController>(c => c.StopAsync());
 
         await SafeExecuteAsync<RGBKeyboardBacklightController>(async c =>
         {
@@ -977,6 +979,12 @@ public partial class App
             await feature.ApplyInternalProfileAsync().ConfigureAwait(false);
         }
 
+        return true;
+    }
+
+    private static async Task<bool> InitFanCurveControllerAsync()
+    {
+        await IoCContainer.Resolve<FanCurveController>().StartStopIfNeededAsync().ConfigureAwait(false);
         return true;
     }
 

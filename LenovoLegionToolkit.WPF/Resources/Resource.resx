@@ -3940,4 +3940,154 @@ Logging will be enabled automatically, if you choose to continue.</value>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="MainWindow_NavigationItem_FanCurve" xml:space="preserve">
+    <value>Fan Curve</value>
+  </data>
+  <data name="FanCurvePage_Title" xml:space="preserve">
+    <value>Fan Curve</value>
+  </data>
+  <data name="FanCurvePage_Enable_Title" xml:space="preserve">
+    <value>Custom fan control</value>
+  </data>
+  <data name="FanCurvePage_Enable_Message" xml:space="preserve">
+    <value>Dynamically control fan speed based on temperature or set a custom fixed speed. Requires Custom power mode.</value>
+  </data>
+  <data name="FanCurvePage_Mode_Title" xml:space="preserve">
+    <value>Control mode</value>
+  </data>
+  <data name="FanCurvePage_Mode_Message" xml:space="preserve">
+    <value>Choose whether to adjust fan speed automatically by a temperature curve or lock to a custom fixed speed.</value>
+  </data>
+  <data name="FanCurvePage_Mode_Curve" xml:space="preserve">
+    <value>Temperature curve</value>
+  </data>
+  <data name="FanCurvePage_Mode_Fixed" xml:space="preserve">
+    <value>Fixed speed</value>
+  </data>
+  <data name="FanCurvePage_FixedSpeed_Title" xml:space="preserve">
+    <value>Custom fan speed</value>
+  </data>
+  <data name="FanCurvePage_FixedSpeed_Message" xml:space="preserve">
+    <value>Set a constant fan speed level. Critical temperature protection still overrides this to 100% if needed.</value>
+  </data>
+  <data name="FanCurvePage_Curve_Title" xml:space="preserve">
+    <value>Temperature curve</value>
+  </data>
+  <data name="FanCurvePage_Curve_Message" xml:space="preserve">
+    <value>Drag points (snaps to 5°C / 5%, hold Shift for 1°C / 1% precision). Double-click to add a point, right-click or press Delete to remove.</value>
+  </data>
+  <data name="FanCurvePage_Preset_Quiet" xml:space="preserve">
+    <value>Quiet</value>
+  </data>
+  <data name="FanCurvePage_Preset_Balanced" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="FanCurvePage_Preset_Performance" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="FanCurvePage_SelectedPoint_Temperature" xml:space="preserve">
+    <value>Temp (°C)</value>
+  </data>
+  <data name="FanCurvePage_SelectedPoint_Speed" xml:space="preserve">
+    <value>Speed (%)</value>
+  </data>
+  <data name="FanCurvePage_AddPoint" xml:space="preserve">
+    <value>Add point</value>
+  </data>
+  <data name="FanCurvePage_RemovePoint" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="FanCurvePage_Source_Title" xml:space="preserve">
+    <value>Temperature source</value>
+  </data>
+  <data name="FanCurvePage_Source_Message" xml:space="preserve">
+    <value>Select which temperature sensor drives the fan curve.</value>
+  </data>
+  <data name="FanCurvePage_Source_Max" xml:space="preserve">
+    <value>Max (CPU &amp; GPU)</value>
+  </data>
+  <data name="FanCurvePage_Source_CPU" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="FanCurvePage_Source_GPU" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="FanCurvePage_Hysteresis_Title" xml:space="preserve">
+    <value>Hysteresis (°C)</value>
+  </data>
+  <data name="FanCurvePage_Hysteresis_Message" xml:space="preserve">
+    <value>Temperature drop required before lowering fan speed, preventing frequent speed fluctuations.</value>
+  </data>
+  <data name="FanCurvePage_Interval_Title" xml:space="preserve">
+    <value>Polling interval (s)</value>
+  </data>
+  <data name="FanCurvePage_Interval_Message" xml:space="preserve">
+    <value>How often temperatures are checked and fan speed is updated.</value>
+  </data>
+  <data name="FanCurvePage_CriticalTemp_Title" xml:space="preserve">
+    <value>Critical temperature protection (°C)</value>
+  </data>
+  <data name="FanCurvePage_CriticalTemp_Message" xml:space="preserve">
+    <value>Force fan speed to 100% whenever temperature reaches or exceeds this threshold.</value>
+  </data>
+  <data name="FanCurvePage_Status_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="FanCurvePage_Status_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="FanCurvePage_Status_InactivePowerMode" xml:space="preserve">
+    <value>Waiting for Custom Mode</value>
+  </data>
+  <data name="FanCurvePage_Status_InactiveFanFullSpeed" xml:space="preserve">
+    <value>Paused (Full Speed)</value>
+  </data>
+  <data name="FanCurvePage_Status_Critical" xml:space="preserve">
+    <value>Critical Override (100%)</value>
+  </data>
+  <data name="FanCurvePage_Status_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="FanCurvePage_PowerModeWarning_Title" xml:space="preserve">
+    <value>Custom power mode required</value>
+  </data>
+  <data name="FanCurvePage_PowerModeWarning_Message" xml:space="preserve">
+    <value>Lenovo hardware only allows custom fan tables in Custom power mode. Switch to Custom mode to activate this curve.</value>
+  </data>
+  <data name="FanCurvePage_SwitchToCustomMode" xml:space="preserve">
+    <value>Switch to Custom Mode</value>
+  </data>
+  <data name="FanCurvePage_FullSpeedWarning_Title" xml:space="preserve">
+    <value>Fan Full Speed is enabled</value>
+  </data>
+  <data name="FanCurvePage_FullSpeedWarning_Message" xml:space="preserve">
+    <value>Turn off Fan Full Speed in Custom mode settings for the fan curve to take effect.</value>
+  </data>
+  <data name="FanCurvePage_Live_CpuTemp" xml:space="preserve">
+    <value>CPU Temp</value>
+  </data>
+  <data name="FanCurvePage_Live_GpuTemp" xml:space="preserve">
+    <value>GPU Temp</value>
+  </data>
+  <data name="FanCurvePage_Live_FanSpeed" xml:space="preserve">
+    <value>Fan Speed</value>
+  </data>
+  <data name="FanCurvePage_Live_Target" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="GodModeSettingsWindow_SoftwareFanCurveActive_Title" xml:space="preserve">
+    <value>Custom Fan Curve is active</value>
+  </data>
+  <data name="GodModeSettingsWindow_SoftwareFanCurveActive_Message" xml:space="preserve">
+    <value>Fan speed is currently controlled dynamically by the Fan Curve page. The BIOS fan curve below is used as a fallback when disabled.</value>
+  </data>
+  <data name="FanCurvePage_UnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="FanCurvePage_Revert" xml:space="preserve">
+    <value>Revert</value>
+  </data>
+  <data name="FanCurvePage_Applied_Title" xml:space="preserve">
+    <value>Fan curve applied</value>
+  </data>
 </root>

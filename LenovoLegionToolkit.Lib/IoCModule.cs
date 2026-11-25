@@ -41,6 +41,7 @@ public class IoCModule : Module
         builder.Register<ApplicationSettings>();
         builder.Register<NotificationSettings>();
         builder.Register<BalanceModeSettings>();
+        builder.Register<FanCurveSettings>();
         builder.Register<OsdSettings>();
         builder.Register<HardwareSensorSettings>();
         builder.Register<GodModeSettings>();
@@ -136,6 +137,7 @@ public class IoCModule : Module
 
         builder.Register<AIController>();
         builder.Register<DisplayBrightnessController>();
+        builder.Register<FanCurveController>();
         builder.Register<GodModeController>();
         builder.Register<GPUController>();
         builder.Register<GPUOverclockController>();

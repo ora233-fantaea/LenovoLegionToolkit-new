@@ -11455,5 +11455,56 @@ namespace LenovoLegionToolkit.WPF.Resources {
                 return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
+
+        public static string MainWindow_NavigationItem_FanCurve => ResourceManager.GetString("MainWindow_NavigationItem_FanCurve", resourceCulture)!;
+        public static string FanCurvePage_Title => ResourceManager.GetString("FanCurvePage_Title", resourceCulture)!;
+        public static string FanCurvePage_Enable_Title => ResourceManager.GetString("FanCurvePage_Enable_Title", resourceCulture)!;
+        public static string FanCurvePage_Enable_Message => ResourceManager.GetString("FanCurvePage_Enable_Message", resourceCulture)!;
+        public static string FanCurvePage_Mode_Title => ResourceManager.GetString("FanCurvePage_Mode_Title", resourceCulture)!;
+        public static string FanCurvePage_Mode_Message => ResourceManager.GetString("FanCurvePage_Mode_Message", resourceCulture)!;
+        public static string FanCurvePage_Mode_Curve => ResourceManager.GetString("FanCurvePage_Mode_Curve", resourceCulture)!;
+        public static string FanCurvePage_Mode_Fixed => ResourceManager.GetString("FanCurvePage_Mode_Fixed", resourceCulture)!;
+        public static string FanCurvePage_FixedSpeed_Title => ResourceManager.GetString("FanCurvePage_FixedSpeed_Title", resourceCulture)!;
+        public static string FanCurvePage_FixedSpeed_Message => ResourceManager.GetString("FanCurvePage_FixedSpeed_Message", resourceCulture)!;
+        public static string FanCurvePage_Curve_Title => ResourceManager.GetString("FanCurvePage_Curve_Title", resourceCulture)!;
+        public static string FanCurvePage_Curve_Message => ResourceManager.GetString("FanCurvePage_Curve_Message", resourceCulture)!;
+        public static string FanCurvePage_Preset_Quiet => ResourceManager.GetString("FanCurvePage_Preset_Quiet", resourceCulture)!;
+        public static string FanCurvePage_Preset_Balanced => ResourceManager.GetString("FanCurvePage_Preset_Balanced", resourceCulture)!;
+        public static string FanCurvePage_Preset_Performance => ResourceManager.GetString("FanCurvePage_Preset_Performance", resourceCulture)!;
+        public static string FanCurvePage_SelectedPoint_Temperature => ResourceManager.GetString("FanCurvePage_SelectedPoint_Temperature", resourceCulture)!;
+        public static string FanCurvePage_SelectedPoint_Speed => ResourceManager.GetString("FanCurvePage_SelectedPoint_Speed", resourceCulture)!;
+        public static string FanCurvePage_AddPoint => ResourceManager.GetString("FanCurvePage_AddPoint", resourceCulture)!;
+        public static string FanCurvePage_RemovePoint => ResourceManager.GetString("FanCurvePage_RemovePoint", resourceCulture)!;
+        public static string FanCurvePage_Source_Title => ResourceManager.GetString("FanCurvePage_Source_Title", resourceCulture)!;
+        public static string FanCurvePage_Source_Message => ResourceManager.GetString("FanCurvePage_Source_Message", resourceCulture)!;
+        public static string FanCurvePage_Source_Max => ResourceManager.GetString("FanCurvePage_Source_Max", resourceCulture)!;
+        public static string FanCurvePage_Source_CPU => ResourceManager.GetString("FanCurvePage_Source_CPU", resourceCulture)!;
+        public static string FanCurvePage_Source_GPU => ResourceManager.GetString("FanCurvePage_Source_GPU", resourceCulture)!;
+        public static string FanCurvePage_Hysteresis_Title => ResourceManager.GetString("FanCurvePage_Hysteresis_Title", resourceCulture)!;
+        public static string FanCurvePage_Hysteresis_Message => ResourceManager.GetString("FanCurvePage_Hysteresis_Message", resourceCulture)!;
+        public static string FanCurvePage_Interval_Title => ResourceManager.GetString("FanCurvePage_Interval_Title", resourceCulture)!;
+        public static string FanCurvePage_Interval_Message => ResourceManager.GetString("FanCurvePage_Interval_Message", resourceCulture)!;
+        public static string FanCurvePage_CriticalTemp_Title => ResourceManager.GetString("FanCurvePage_CriticalTemp_Title", resourceCulture)!;
+        public static string FanCurvePage_CriticalTemp_Message => ResourceManager.GetString("FanCurvePage_CriticalTemp_Message", resourceCulture)!;
+        public static string FanCurvePage_Status_Active => ResourceManager.GetString("FanCurvePage_Status_Active", resourceCulture)!;
+        public static string FanCurvePage_Status_Disabled => ResourceManager.GetString("FanCurvePage_Status_Disabled", resourceCulture)!;
+        public static string FanCurvePage_Status_InactivePowerMode => ResourceManager.GetString("FanCurvePage_Status_InactivePowerMode", resourceCulture)!;
+        public static string FanCurvePage_Status_InactiveFanFullSpeed => ResourceManager.GetString("FanCurvePage_Status_InactiveFanFullSpeed", resourceCulture)!;
+        public static string FanCurvePage_Status_Critical => ResourceManager.GetString("FanCurvePage_Status_Critical", resourceCulture)!;
+        public static string FanCurvePage_Status_Error => ResourceManager.GetString("FanCurvePage_Status_Error", resourceCulture)!;
+        public static string FanCurvePage_PowerModeWarning_Title => ResourceManager.GetString("FanCurvePage_PowerModeWarning_Title", resourceCulture)!;
+        public static string FanCurvePage_PowerModeWarning_Message => ResourceManager.GetString("FanCurvePage_PowerModeWarning_Message", resourceCulture)!;
+        public static string FanCurvePage_SwitchToCustomMode => ResourceManager.GetString("FanCurvePage_SwitchToCustomMode", resourceCulture)!;
+        public static string FanCurvePage_FullSpeedWarning_Title => ResourceManager.GetString("FanCurvePage_FullSpeedWarning_Title", resourceCulture)!;
+        public static string FanCurvePage_FullSpeedWarning_Message => ResourceManager.GetString("FanCurvePage_FullSpeedWarning_Message", resourceCulture)!;
+        public static string FanCurvePage_Live_CpuTemp => ResourceManager.GetString("FanCurvePage_Live_CpuTemp", resourceCulture)!;
+        public static string FanCurvePage_Live_GpuTemp => ResourceManager.GetString("FanCurvePage_Live_GpuTemp", resourceCulture)!;
+        public static string FanCurvePage_Live_FanSpeed => ResourceManager.GetString("FanCurvePage_Live_FanSpeed", resourceCulture)!;
+        public static string FanCurvePage_Live_Target => ResourceManager.GetString("FanCurvePage_Live_Target", resourceCulture)!;
+        public static string GodModeSettingsWindow_SoftwareFanCurveActive_Title => ResourceManager.GetString("GodModeSettingsWindow_SoftwareFanCurveActive_Title", resourceCulture)!;
+        public static string GodModeSettingsWindow_SoftwareFanCurveActive_Message => ResourceManager.GetString("GodModeSettingsWindow_SoftwareFanCurveActive_Message", resourceCulture)!;
+        public static string FanCurvePage_UnsavedChanges => ResourceManager.GetString("FanCurvePage_UnsavedChanges", resourceCulture)!;
+        public static string FanCurvePage_Revert => ResourceManager.GetString("FanCurvePage_Revert", resourceCulture)!;
+        public static string FanCurvePage_Applied_Title => ResourceManager.GetString("FanCurvePage_Applied_Title", resourceCulture)!;
     }
 }

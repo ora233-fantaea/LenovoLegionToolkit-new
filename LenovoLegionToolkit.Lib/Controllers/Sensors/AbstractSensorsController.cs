@@ -156,6 +156,21 @@ public abstract class AbstractSensorsController(GPUController gpuController) : I
         return new FanSpeedTable(cpuFanSpeed, gpuFanSpeed, systemFans);
     }
 
+    public virtual async Task<(int cpuTemperature, int gpuTemperature)> GetTemperaturesAsync()
+    {
+        var cpuTemperature = await GetCpuCurrentTemperatureAsync().ConfigureAwait(false);
+        var gpuTemperature = await GetGpuCurrentTemperatureAsync().ConfigureAwait(false);
+
+        if (gpuTemperature < 1)
+        {
+            var gpuInfo = await GetGPUInfoAsync().ConfigureAwait(false);
+            if (gpuInfo.Temperature > 0)
+                gpuTemperature = gpuInfo.Temperature;
+        }
+
+        return (cpuTemperature, gpuTemperature);
+    }
+
     protected async Task<IReadOnlyList<FanData>> GetSystemFansAsync()
     {
         var definitions = SystemFanDefinitions;

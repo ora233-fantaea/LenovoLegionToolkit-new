@@ -185,6 +185,16 @@ public class SensorsController(GPUController gpuController) : AbstractSensorsCon
         return await base.GetFanSpeedsAsync().ConfigureAwait(false);
     }
 
+    public override async Task<(int cpuTemperature, int gpuTemperature)> GetTemperaturesAsync()
+    {
+        if (!await IsSupportedAsync().ConfigureAwait(false))
+        {
+            return (-1, -1);
+        }
+
+        return await base.GetTemperaturesAsync().ConfigureAwait(false);
+    }
+
     protected override Task<int> GetCpuCurrentTemperatureAsync() =>
         GetTemperatureAsync(GetProfile().TemperatureSource, CapabilityID.CpuCurrentTemperature, GetProfile().CpuTemperatureSensorId);
 

@@ -10,4 +10,5 @@ public interface ISensorsController
     Task PrepareAsync();
     Task<SensorsData> GetDataAsync();
     Task<FanSpeedTable> GetFanSpeedsAsync();
+    Task<(int cpuTemperature, int gpuTemperature)> GetTemperaturesAsync();
 }

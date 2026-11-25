@@ -247,6 +247,15 @@
                     </TabItem.Header>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="0,0,8,0">
+                            <custom:InfoBar
+                                x:Name="_softwareFanCurveWarningInfoBar"
+                                Title="{x:Static resources:Resource.GodModeSettingsWindow_SoftwareFanCurveActive_Title}"
+                                Margin="0,0,0,8"
+                                IsClosable="False"
+                                IsOpen="False"
+                                Message="{x:Static resources:Resource.GodModeSettingsWindow_SoftwareFanCurveActive_Message}"
+                                Severity="Informational" />
+
                             <custom:CardControl
                                 x:Name="_fanCurveCardControl"
                                 Margin="0,0,0,8"
