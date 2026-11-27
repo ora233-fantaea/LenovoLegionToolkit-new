@@ -9,10 +9,10 @@ for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd"') do 
 
 SET PATH=%PATH%;"C:\Program Files (x86)\Inno Setup 6"
 
-dotnet publish "LenovoLegionToolkit.WPF\LenovoLegionToolkit.WPF.csproj" -c release -o build /p:DebugType=None /p:FileVersion=%VERSION% /p:Version=%VERSION% || exit /b
 dotnet publish "LenovoLegionToolkit.SpectrumTester\LenovoLegionToolkit.SpectrumTester.csproj" -c release -o build /p:DebugType=None /p:FileVersion=%VERSION% /p:Version=%VERSION% || exit /b
 dotnet publish "LenovoLegionToolkit.Probe\LenovoLegionToolkit.Probe.csproj" -c release -o build /p:DebugType=None /p:FileVersion=%VERSION% /p:Version=%VERSION% || exit /b
 dotnet publish "LenovoLegionToolkit.CLI\LenovoLegionToolkit.CLI.csproj" -c release -o build /p:DebugType=None /p:FileVersion=%VERSION% /p:Version=%VERSION% || exit /b
+dotnet publish "LenovoLegionToolkit.WPF\LenovoLegionToolkit.WPF.csproj" -c release -o build /p:DebugType=None /p:FileVersion=%VERSION% /p:Version=%VERSION% || exit /b
 
 echo Copying packaging files...
 SET USE_MANIFEST=
@@ -22,4 +22,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ".\build_identity_package.ps
 iscc make_installer.iss /DMyAppVersion=%VERSION% /DMyBuildDate=%BUILD_DATE% || exit /b
 
 echo Stamping installer executable...
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\sign_installer.ps1" -InstallerPath "build_installer\LenovoLegionToolkitSetup-v%VERSION%_Build%BUILD_DATE%.exe" || exit /b
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\sign_installer.ps1" -InstallerPath "build_installer\TomoriNaoToolkitSetup-v%VERSION%_Build%BUILD_DATE%.exe" || exit /b

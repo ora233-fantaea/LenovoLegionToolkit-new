@@ -1,15 +1,15 @@
+﻿#ifndef SelfContained
 #include "InnoDependencies\Scripts\install_dotnet.iss"
+#endif
 
-#define MyAppName "Lenovo Legion Toolkit"
-#define MyAppNameCompact "LenovoLegionToolkit"
-#define MyAppPublisher "LenovoLegionToolkit-Team"
-#define MyAppURL "https://github.com/LenovoLegionToolkit-Team/LenovoLegionToolkit"
-#define MyAppExeName "Lenovo Legion Toolkit.exe"
-#define MyAppGitHub "https://github.com/LenovoLegionToolkit-Team/LenovoLegionToolkit"
-#define MyAppLegionDiscord "https://discord.com/invite/legionseries"
-#define MyAppLOQDiscord "https://discord.gg/3GKzQtwdNf"
-#define MyAppOfficialDiscord "https://discord.gg/TB3ER8ZVdt"
-#define MyAppCopyright "© 2026 Bartosz Cichecki, Kaguya, and Dr. Skinner"
+#define MyAppName "Tomori Nao's Toolkit"
+#define MyAppNameCompact "TomoriNaoToolkit"
+#define MyAppDataFolder "LenovoLegionToolkit"
+#define MyAppPublisher "Tomori Nao's Toolkit (based on LenovoLegionToolkit-Team)"
+#define MyAppURL "https://github.com/ora233-fantaea/LenovoLegionToolkit-new"
+#define MyAppExeName "TomoriNaoToolkit.exe"
+#define MyAppGitHub "https://github.com/ora233-fantaea/LenovoLegionToolkit-new"
+#define MyAppCopyright "© 2026 Bartosz Cichecki, Kaguya, and Dr. Skinner (Original) | Modified under GPL-3.0"
 
 #ifndef MyAppVersion
   #define MyAppVersion "0.0.1"
@@ -37,15 +37,24 @@ DefaultDirName={commonpf}\{#MyAppNameCompact}
 DisableProgramGroupPage=yes
 LicenseFile=LICENSE
 PrivilegesRequired=admin
-OutputBaseFilename=LenovoLegionToolkitSetup-v{#MyAppVersion}_Build{#MyBuildDate}
+#ifdef OutputFileName
+OutputBaseFilename={#OutputFileName}
+#else
+OutputBaseFilename=TomoriNaoToolkitSetup-v{#MyAppVersion}_Build{#MyBuildDate}
+#endif
 Compression=lzma2/ultra64
 SolidCompression=yes
-WizardStyle=modern
+WizardStyle=modern dynamic
+DisableWelcomePage=no
 UninstallDisplayName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 OutputDir=build_installer
 ArchitecturesInstallIn64BitMode=x64compatible
-WizardSmallImageFile=InnoDependencies\Images\logo.png
+WizardImageFile=InnoDependencies\Images\installer_wizard_light.png
+WizardImageFileDynamicDark=InnoDependencies\Images\installer_wizard_dark.png
+WizardSmallImageFile=InnoDependencies\Images\installer_wizard_small.png
+WizardSmallImageFileDynamicDark=InnoDependencies\Images\installer_wizard_small.png
+WizardImageStretch=yes
 SetupIconFile=InnoDependencies\Images\setup_icon.ico
 SetupLogging=yes
 
@@ -55,7 +64,9 @@ var
 
 function InitializeSetup: Boolean;
 begin
+#ifndef SelfContained
   InstallDotNetDesktopRuntime;
+#endif
   Result := True;
 end;
 
@@ -161,7 +172,7 @@ begin
   begin
     if SuppressibleMsgBox(ExpandConstant('{cm:UninstallKeepSettings}'), mbConfirmation, MB_YESNO, idNo) = idYes then
     begin
-        DelTree(ExpandConstant('{localappdata}\{#MyAppNameCompact}'), True, True, True);
+        DelTree(ExpandConstant('{localappdata}\{#MyAppDataFolder}'), True, True, True);
     end;
   end;
 end;
@@ -173,29 +184,14 @@ begin
   ShellExec('open', Url, '', '', SW_SHOWNORMAL, ewNoWait, ResultCode);
 end;
 
-procedure OfficialDiscordLinkClick(Sender: TObject);
-begin
-  OpenBrowser('{#MyAppOfficialDiscord}');
-end;
-
 procedure GitHubLinkClick(Sender: TObject);
 begin
   OpenBrowser('{#MyAppGitHub}');
 end;
 
-procedure LegionDiscordLinkClick(Sender: TObject);
-begin
-  OpenBrowser('{#MyAppLegionDiscord}');
-end;
-
-procedure LOQDiscordLinkClick(Sender: TObject);
-begin
-  OpenBrowser('{#MyAppLOQDiscord}');
-end;
-
 procedure CurPageChanged(CurPageID: Integer);
 var
-  OfficialDiscordLink, GitHubLink, LegionDiscordLink, LOQDiscordLink: TNewStaticText;
+  GitHubLink: TNewStaticText;
   Offset: Integer;
 begin
   if CurPageID = wpFinished then
@@ -212,38 +208,8 @@ begin
     GitHubLink.Cursor := crHand;
     GitHubLink.OnClick := @GitHubLinkClick;
 
-    OfficialDiscordLink := TNewStaticText.Create(WizardForm);
-    OfficialDiscordLink.Parent := WizardForm.FinishedPage;
-    OfficialDiscordLink.Top := GitHubLink.Top + GitHubLink.Height + ScaleY(8);
-    OfficialDiscordLink.Left := WizardForm.FinishedLabel.Left;
-    OfficialDiscordLink.Caption := ExpandConstant('{cm:JoinOfficialDiscord}');
-    OfficialDiscordLink.Font.Color := clBlue;
-    OfficialDiscordLink.Font.Style := [fsUnderline];
-    OfficialDiscordLink.Cursor := crHand;
-    OfficialDiscordLink.OnClick := @OfficialDiscordLinkClick;
-
-    LegionDiscordLink := TNewStaticText.Create(WizardForm);
-    LegionDiscordLink.Parent := WizardForm.FinishedPage;
-    LegionDiscordLink.Top := OfficialDiscordLink.Top + OfficialDiscordLink.Height + ScaleY(8);
-    LegionDiscordLink.Left := WizardForm.FinishedLabel.Left;
-    LegionDiscordLink.Caption := ExpandConstant('{cm:JoinLegionDiscord}');
-    LegionDiscordLink.Font.Color := clBlue;
-    LegionDiscordLink.Font.Style := [fsUnderline];
-    LegionDiscordLink.Cursor := crHand;
-    LegionDiscordLink.OnClick := @LegionDiscordLinkClick;
-
-    LOQDiscordLink := TNewStaticText.Create(WizardForm);
-    LOQDiscordLink.Parent := WizardForm.FinishedPage;
-    LOQDiscordLink.Top := LegionDiscordLink.Top + LegionDiscordLink.Height + ScaleY(8);
-    LOQDiscordLink.Left := WizardForm.FinishedLabel.Left;
-    LOQDiscordLink.Caption := ExpandConstant('{cm:JoinLOQDiscord}');
-    LOQDiscordLink.Font.Color := clBlue;
-    LOQDiscordLink.Font.Style := [fsUnderline];
-    LOQDiscordLink.Cursor := crHand;
-    LOQDiscordLink.OnClick := @LOQDiscordLinkClick;
-
     if WizardForm.RunList.Visible then
-      WizardForm.RunList.Top := LOQDiscordLink.Top + LOQDiscordLink.Height + ScaleY(12);
+      WizardForm.RunList.Top := GitHubLink.Top + GitHubLink.Height + ScaleY(12);
   end;
 end;
 
@@ -253,7 +219,7 @@ JoinLegionDiscord=Join Legion Series Discord Community
 JoinOfficialDiscord=Join Official Discord Community
 SecurePathPageNote=Installing outside of a protected folder such as Program Files will disable UIAccess features, including OSD overlay and notification elevation, on Windows 11 23H2 and below. On newer Windows versions, this will cause Windows to block the application from launching entirely.
 SecurePathWarning=Installing outside of a protected folder such as Program Files will disable features relying on UIAccess, including OSD overlay and notification elevation, on Windows 11 23H2 and below. On newer Windows versions, this will cause Windows to block the application from launching entirely due to stricter security policies.%n%nAre you sure you want to install to this folder anyway?
-UninstallKeepSettings=Do you want to delete all Lenovo Legion Toolkit settings, customizations, and configurations?
+UninstallKeepSettings=Do you want to delete all Tomori Nao's Toolkit settings, customizations, and configurations?
 VisitGitHub=Visit GitHub Repository
 
 ar.JoinLOQDiscord=الانضمام إلى مجتمع Discord لسلسلة LOQ
@@ -261,7 +227,7 @@ ar.JoinLegionDiscord=الانضمام إلى مجتمع Discord لسلسلة Leg
 ar.JoinOfficialDiscord=الانضمام إلى مجتمع Discord الرسمي
 ar.SecurePathPageNote=التثبيت خارج مجلد محمي مثل Program Files سيؤدي إلى تعطيل ميزات UIAccess، بما في ذلك تراكب OSD وترقية الإشعارات، على Windows 11 23H2 والإصدارات الأقدم. في إصدارات Windows الأحدث، سيؤدي هذا إلى قيام Windows بحظر تشغيل التطبيق بالكامل.
 ar.SecurePathWarning=التثبيت خارج مجلد محمي مثل Program Files سيؤدي إلى تعطيل الميزات التي تعتمد على UIAccess، بما في ذلك تراكب OSD وترقية الإشعارات، على Windows 11 23H2 والإصدارات الأقدم. في إصدارات Windows الأحدث, سيؤدي هذا إلى قيام Windows بحظر تشغيل التطبيق بالكامل بسبب سياسات الأمان الأكثر صرامة.%n%nهل أنت متأكد من أنك تريد التثبيت في هذا المجلد على أي حال؟
-ar.UninstallKeepSettings=هل تريد حذف جميع إعدادات وتخصيصات وتكوينات Lenovo Legion Toolkit؟
+ar.UninstallKeepSettings=هل تريد حذف جميع إعدادات وتخصيصات وتكوينات Tomori Nao's Toolkit؟
 ar.VisitGitHub=زيارة مستودع GitHub
 
 bg.JoinLOQDiscord=Присъединете се към Discord общността на серията LOQ
@@ -269,7 +235,7 @@ bg.JoinLegionDiscord=Присъединете се към Discord общност
 bg.JoinOfficialDiscord=Присъединете се към официалната Discord общност
 bg.SecurePathPageNote=Инсталирането извън защитена папка като Program Files ще деактивира функциите на UIAccess, включително OSD наслагването и повишаването на известията, в Windows 11 23H2 и по-стари версии. При по-нови версии на Windows това ще накара Windows да блокира стартирането на приложението изцяло.
 bg.SecurePathWarning=Инсталирането извън защитена папка като Program Files ще деактивира функциите, разчитащи на UIAccess, включително OSD наслагването и повишаването на известията, в Windows 11 23H2 и по-стари версии. При по-нови версии на Windows това ще накара Windows да блокира стартирането на приложението изцяло поради по-строги политики за сигурност.%n%nСигурни ли сте, че искате да инсталирате в тази папка въпреки това?
-bg.UninstallKeepSettings=Искате ли да изтриете всички настройки, персонализации и конфигурации на Lenovo Legion Toolkit?
+bg.UninstallKeepSettings=Искате ли да изтриете всички настройки, персонализации и конфигурации на Tomori Nao's Toolkit?
 bg.VisitGitHub=Посетете хранилището в GitHub
 
 bs.JoinLOQDiscord=Pridružite se Discord zajednici LOQ serije
@@ -277,7 +243,7 @@ bs.JoinLegionDiscord=Pridružite se Discord zajednici Legion serije
 bs.JoinOfficialDiscord=Pridružite se zvaničnoj Discord zajednici
 bs.SecurePathPageNote=Instalacija izvan zaštićenog direktorija kao što je Program Files onemogućit će UIAccess funkcije, uključujući OSD prikaz i povišenje obavještenja, na Windows 11 23H2 i starijim verzijama. Na novijim verzijama Windowsa, ovo će uzrokovati da Windows potpuno blokira pokretanje aplikacije.
 bs.SecurePathWarning=Instalacija izvan zaštićenog direktorija kao što je Program Files onemogućit će funkcije koje se oslanjaju na UIAccess, uključujući OSD prikaz i povišenje obavještenja, na Windows 11 23H2 i starijim verzijama. Na novijim verzijama Windowsa, ovo će uzrokovati da Windows potpuno blokira pokretanje aplikacije zbog strožih sigurnosnih pravila.%n%nJeste li sigurni da ipak želite instalirati u ovaj direktorij?
-bs.UninstallKeepSettings=Da li želite obrisati sve postavke, prilagođavanja i konfiguracije za Lenovo Legion Toolkit?
+bs.UninstallKeepSettings=Da li želite obrisati sve postavke, prilagođavanja i konfiguracije za Tomori Nao's Toolkit?
 bs.VisitGitHub=Posjetite GitHub repozitorij
 
 cs.JoinLOQDiscord=Připojit se k Discord komunitě řady LOQ
@@ -285,7 +251,7 @@ cs.JoinLegionDiscord=Připojit se k Discord komunitě řady Legion
 cs.JoinOfficialDiscord=Připojit se k oficiální Discord komunitě
 cs.SecurePathPageNote=Instalace mimo chráněnou složku, jako je Program Files, zakáže funkce UIAccess, včetně OSD překryvu a zvýšení oprávnění oznámení, v systému Windows 11 23H2 a starších. Na novějších verzích systému Windows to způsobí, že Windows aplikaci zcela zablokuje.
 cs.SecurePathWarning=Instalace mimo chráněnou složku, jako je Program Files, zakáže funkce závislé na UIAccess, včetně OSD překryvu a zvýšení oprávnění oznámení, v systému Windows 11 23H2 a starších. Na novějších verzích systému Windows to způsobí, že Windows aplikaci zcela zablokuje z důvodu přísnějších bezpečnostních zásad.%n%nOpravdu chcete přesto instalovat do této složky?
-cs.UninstallKeepSettings=Chcete vymazat všechna nastavení, přizpůsobení a konfigurace Lenovo Legion Toolkit?
+cs.UninstallKeepSettings=Chcete vymazat všechna nastavení, přizpůsobení a konfigurace Tomori Nao's Toolkit?
 cs.VisitGitHub=Navštívit GitHub repozitář
 
 de.JoinLOQDiscord=Discord Community der LOQ Serie beitreten
@@ -293,7 +259,7 @@ de.JoinLegionDiscord=Discord Community der Legion Serie beitreten
 de.JoinOfficialDiscord=Offizieller Discord Community beitreten
 de.SecurePathPageNote=Die Installation außerhalb eines geschützten Ordners wie Program Files deaktiviert unter Windows 11 23H2 und älter UIAccess Funktionen, einschließlich OSD Overlay und Benachrichtigungserhöhung. Auf neueren Windows Versionen blockiert Windows den Start der Anwendung vollständig.
 de.SecurePathWarning=Die Installation außerhalb eines geschützten Ordners wie Program Files deaktiviert unter Windows 11 23H2 und älter Funktionen, die auf UIAccess beruhen, einschließlich OSD Overlay und Benachrichtigungserhöhung. Auf neueren Windows Versionen führt dies aufgrund strengerer Sicherheitsrichtlinien dazu, dass Windows den Start der Anwendung vollständig blockiert.%n%nMöchten Sie trotzdem in diesen Ordner installieren?
-de.UninstallKeepSettings=Möchten Sie alle Einstellungen, Anpassungen und Konfigurationen von Lenovo Legion Toolkit löschen?
+de.UninstallKeepSettings=Möchten Sie alle Einstellungen, Anpassungen und Konfigurationen von Tomori Nao's Toolkit löschen?
 de.VisitGitHub=GitHub Repository besuchen
 
 el.JoinLOQDiscord=Σύνδεση στην κοινότητα Discord της σειράς LOQ
@@ -301,7 +267,7 @@ el.JoinLegionDiscord=Σύνδεση στην κοινότητα Discord της �
 el.JoinOfficialDiscord=Σύνδεση στην επίσημη κοινότητα Discord
 el.SecurePathPageNote=Η εγκατάσταση εκτός προστατευμένου φακέλου όπως το Program Files θα απενεργοποιήσει τις λειτουργίες UIAccess, συμπεριλαμβανομένης της επικάλυψης OSD και της ανύψωσης ειδοποιήσεων, σε Windows 11 23H2 και παλαιότερα. Σε νεότερες εκδόσεις των Windows, αυτό θα αναγκάσει τα Windows να αποκλείσουν πλήρως την εκκίνηση της εφαρμογής.
 el.SecurePathWarning=Η εγκατάσταση εκτός προστατευμένου φακέλου όπως το Program Files θα απενεργοποιήσει λειτουργίες που βασίζονται στο UIAccess, συμπεριλαμβανομένης της επικάλυψης OSD και της ανύψωσης ειδοποιήσεων, σε Windows 11 23H2 και παλαιότερα. Σε νεότερες εκδόσεις των Windows, αυτό θα αναγκάσει τα Windows να αποκλείσουν πλήρως την εκκίνηση της εφαρμογής λόγω αυστηρότερων πολιτικών ασφαλείας.%n%nΕίστε βέβαιοι ότι θέλετε να κάνετε εγκατάσταση σε αυτόν τον φάκελο παρόλα αυτά;
-el.UninstallKeepSettings=Θέλετε να διαγράψετε όλες τις ρυθμίσεις, τις προσαρμογές και τις παραμέτρους του Lenovo Legion Toolkit;
+el.UninstallKeepSettings=Θέλετε να διαγράψετε όλες τις ρυθμίσεις, τις προσαρμογές και τις παραμέτρους του Tomori Nao's Toolkit;
 el.VisitGitHub=Επίσκεψη στο αποθετήριο GitHub
 
 es.JoinLOQDiscord=Unirse a la comunidad de Discord de la serie LOQ
@@ -309,7 +275,7 @@ es.JoinLegionDiscord=Unirse a la comunidad de Discord de la serie Legion
 es.JoinOfficialDiscord=Unirse a la comunidad oficial de Discord
 es.SecurePathPageNote=Instalar fuera de una carpeta protegida como Program Files desactivará las funciones de UIAccess, incluyendo la superposición OSD y la elevación de notificaciones, en Windows 11 23H2 y versiones anteriores. En versiones de Windows más nuevas, esto hará que Windows bloquee el inicio de la aplicación por completo.
 es.SecurePathWarning=Instalar fuera de una carpeta protegida como Program Files desactivará las funciones que dependen de UIAccess, incluyendo la superposición OSD y la elevación de notificaciones, en Windows 11 23H2 y versiones anteriores. En versiones de Windows más nuevas, esto hará que Windows bloquee el inicio de la aplicación por completo debido a políticas de seguridad más estrictas.%n%n¿Está seguro de que desea instalar en esta carpeta de todas formas?
-es.UninstallKeepSettings=¿Desea eliminar todos los ajustes, personalizaciones y configuraciones de Lenovo Legion Toolkit?
+es.UninstallKeepSettings=¿Desea eliminar todos los ajustes, personalizaciones y configuraciones de Tomori Nao's Toolkit?
 es.VisitGitHub=Visitar el repositorio de GitHub
 
 fr.JoinLOQDiscord=Rejoindre la communauté Discord de la série LOQ
@@ -317,7 +283,7 @@ fr.JoinLegionDiscord=Rejoindre la communauté Discord de la série Legion
 fr.JoinOfficialDiscord=Rejoindre la communauté officielle Discord
 fr.SecurePathPageNote=L'installation en dehors d'un dossier protégé comme Program Files désactivera les fonctionnalités UIAccess, y compris la superposition OSD et l'élévation des notifications, sur Windows 11 23H2 et versions antérieures. Sur les versions plus récentes de Windows, cela obligera Windows à bloquer complètement le lancement de l'application.
 fr.SecurePathWarning=L'installation en dehors d'un dossier protégé comme Program Files désactivera les fonctionnalités reposant sur UIAccess, y compris la superposition OSD et l'élévation des notifications, sur Windows 11 23H2 et versions antérieures. Sur les versions plus récentes de Windows, cela obligera Windows à bloquer complètement le lancement de l'application en raison de politiques de sécurité plus strictes.%n%nÊtes-vous sûr de vouloir installer dans ce dossier malgré tout ?
-fr.UninstallKeepSettings=Voulez-vous supprimer tous les paramètres, personnalisations et configurations de Lenovo Legion Toolkit ?
+fr.UninstallKeepSettings=Voulez-vous supprimer tous les paramètres, personnalisations et configurations de Tomori Nao's Toolkit ?
 fr.VisitGitHub=Visiter le dépôt GitHub
 
 hu.JoinLOQDiscord=Csatlakozás a LOQ sorozat Discord közösségéhez
@@ -325,7 +291,7 @@ hu.JoinLegionDiscord=Csatlakozás a Legion sorozat Discord közösségéhez
 hu.JoinOfficialDiscord=Csatlakozás a hivatalos Discord közösséghez
 hu.SecurePathPageNote=A Program Files-hoz hasonló védett mappán kívüli telepítés letiltja a UIAccess funkciókat, beleértve az OSD átfedést és az értesítések szintjének emelését Windows 11 23H2 és régebbi rendszereken. Újabb Windows verziókon a Windows teljesen blokkolja az alkalmazás indítását.
 hu.SecurePathWarning=A Program Files-hoz hasonló védett mappán kívüli telepítés letiltja a UIAccess-re támaszkodó funkciókat, beleértve az OSD átfedést és az értesítések szintjének emelését Windows 11 23H2 és régebbi rendszereken. Újabb Windows verziókon a szigorúbb biztonsági irányelvek miatt a Windows teljesen blokkolja az alkalmazás indítását.%n%nBiztosan ebbe a mappába szeretné telepíteni?
-hu.UninstallKeepSettings=Szeretné törölni a Lenovo Legion Toolkit összes beállítását, testreszabását és konfigurációját?
+hu.UninstallKeepSettings=Szeretné törölni a Tomori Nao's Toolkit összes beállítását, testreszabását és konfigurációját?
 hu.VisitGitHub=GitHub tárhely felkeresése
 
 it.JoinLOQDiscord=Entra nella community Discord della serie LOQ
@@ -333,7 +299,7 @@ it.JoinLegionDiscord=Entra nella community Discord della serie Legion
 it.JoinOfficialDiscord=Entra nella community ufficiale di Discord
 it.SecurePathPageNote=L'installazione al di fuori di una cartella protetta come Program Files disabiliterà le funzionalità UIAccess, tra cui la sovrapposizione OSD e l'elevazione delle notifiche, su Windows 11 23H2 e versioni precedenti. Sulle versioni di Windows più recenti, questo farà sì che Windows blocchi completamente l'avvio dell'applicazione.
 it.SecurePathWarning=L'installazione al di fuori di una cartella protetta come Program Files disabiliterà le funzionalità che si affidano a UIAccess, tra cui la sovrapposizione OSD e l'elevazione delle notifiche, su Windows 11 23H2 e versioni precedenti. Sulle versioni di Windows più recenti, questo farà sì che Windows blocchi completamente l'avvio dell'applicazione a causa di criteri di sicurezza più severi.%n%nSei sicuro di voler installare comunque in questa cartella?
-it.UninstallKeepSettings=Vuoi eliminare tutte le impostazioni, personalizzazioni e configurazioni di Lenovo Legion Toolkit?
+it.UninstallKeepSettings=Vuoi eliminare tutte le impostazioni, personalizzazioni e configurazioni di Tomori Nao's Toolkit?
 it.VisitGitHub=Visita la repository GitHub
 
 ja.JoinLOQDiscord=LOQシリーズのDiscordコミュニティに参加
@@ -341,7 +307,7 @@ ja.JoinLegionDiscord=LegionシリーズのDiscordコミュニティに参加
 ja.JoinOfficialDiscord=公式Discordコミュニティに参加
 ja.SecurePathPageNote=Program Filesなどの保護されたフォルダー以外にインストールすると、Windows 11 23H2以前ではOSDオーバーレイや通知の昇格などのUIAccess機能が無効になります。新しいWindowsバージョンでは、Windowsがアプリケーション의 起動を完全にブロックします。
 ja.SecurePathWarning=Program Filesなどの保護されたフォルダー以外にインストールすると、Windows 11 23H2以前ではOSDオーバーレイや通知の昇格などのUIAccessに依存する機能が無効になります。新しいWindowsバージョンでは、セキュリティポリシーの強化により、Windowsがアプリケーションの起動を完全にブロックします。%n%n本当にこのフォルダーにインストールしますか？
-ja.UninstallKeepSettings=Lenovo Legion Toolkitの設定、カスタマイズ、および構成をすべて削除しますか？
+ja.UninstallKeepSettings=Tomori Nao's Toolkitの設定、カスタマイズ、および構成をすべて削除しますか？
 ja.VisitGitHub=GitHubリポジトリを表示
 
 ko.JoinLOQDiscord=LOQ 시리즈 Discord 커뮤니티 가입
@@ -349,7 +315,7 @@ ko.JoinLegionDiscord=Legion 시리즈 Discord 커뮤니티 가입
 ko.JoinOfficialDiscord=공식 Discord 커뮤니티 가입
 ko.SecurePathPageNote=Program Files와 같은 보호된 폴더 외부에 설치하면 Windows 11 23H2 이하에서 OSD 오버레이 및 알림 승인을 포함한 UIAccess 기능이 비활성화됩니다. 최신 Windows 버전에서는 Windows가 애플리케이션 실행을 완전히 차단합니다.
 ko.SecurePathWarning=Program Files와 같은 보호된 폴더 외부에 설치하면 Windows 11 23H2 이하에서 OSD 오버레이 및 알림 승인을 포함한 UIAccess 의존 기능이 비활성화됩니다. 최신 Windows 버전에서는 강화된 보안 정책으로 인해 Windows가 애플리케이션 실행을 완전히 차단합니다.%n%n그래도 이 폴더에 설치하시겠습니까?
-ko.UninstallKeepSettings=Lenovo Legion Toolkit의 모든 설정, 개인화 및 구성을 삭제하시겠습니까?
+ko.UninstallKeepSettings=Tomori Nao's Toolkit의 모든 설정, 개인화 및 구성을 삭제하시겠습니까?
 ko.VisitGitHub=GitHub 리포지토리 방문
 
 lv.JoinLOQDiscord=Pievienoties LOQ sērijas Discord kopienai
@@ -357,7 +323,7 @@ lv.JoinLegionDiscord=Pievienoties Legion sērijas Discord kopienai
 lv.JoinOfficialDiscord=Pievienoties oficiālajai Discord kopienai
 lv.SecurePathPageNote=Instalēšana ārpus aizsargātas mapes, piemēram, Program Files, atspējos UIAccess funkcijas, tostarp OSD pārklājumu un paziņojumu paaugstināšanu, operētājsistēmā Windows 11 23H2 un vecākās versijās. Jaunākās Windows versijās Windows pilnībā bloķēs lietotnes palaišanu.
 lv.SecurePathWarning=Instalēšana ārpus aizsargātas mapes, piemēram, Program Files, atspējos funkcijas, kas balstās uz UIAccess, tostarp OSD pārklājumu un paziņojumu paaugstināšanu, operētājsistēmā Windows 11 23H2 un vecākās versijās. Jaunākās Windows versijās stingrāku drošības politiku dēļ Windows pilnībā bloķēs lietotnes palaišanu.%n%nVai tiešām vēlaties instalēt šajā mapē jebkurā gadījumā?
-lv.UninstallKeepSettings=Vai vēlaties dzēst visus Lenovo Legion Toolkit iestatījumus, pielāgojumus un konfigurācijas?
+lv.UninstallKeepSettings=Vai vēlaties dzēst visus Tomori Nao's Toolkit iestatījumus, pielāgojumus un konfigurācijas?
 lv.VisitGitHub=Apmeklēt GitHub krātuvi
 
 nlnl.JoinLOQDiscord=Lid worden van de LOQ-serie Discord-community
@@ -365,7 +331,7 @@ nlnl.JoinLegionDiscord=Lid worden van de Legion-serie Discord-community
 nlnl.JoinOfficialDiscord=Lid worden van de offiziële Discord-community
 nlnl.SecurePathPageNote=Installeren buiten een beveiligde map zoals Program Files schakelt UIAccess-functies uit, waaronder de OSD-overlay en verhoogde meldingen, in Windows 11 23H2 og ouder. Op nieuwere Windows-versies blokkeert Windows het starten van de applicatie volledig.
 nlnl.SecurePathWarning=Installeren buiten een beveiligde map zoals Program Files schakelt functies uit die afhankelijk zijn van UIAccess, waaronder de OSD-overlay en verhoogde meldingen, in Windows 11 23H2 en ouder. Op nieuwere Windows-versies zorgt dit ervoor dat Windows het starten van de applicatie volledig blokkeert vanwege strenger veiligheidsbeleid.%n%nWilt u toch in deze map installeren?
-nlnl.UninstallKeepSettings=Wilt u alle instellingen, aanpassingen en configuraties van Lenovo Legion Toolkit verwijderen?
+nlnl.UninstallKeepSettings=Wilt u alle instellingen, aanpassingen en configuraties van Tomori Nao's Toolkit verwijderen?
 nlnl.VisitGitHub=GitHub-opslagplaats bezoeken
 
 no.JoinLOQDiscord=Bli med i LOQ-seriens Discord-fellesskap
@@ -373,7 +339,7 @@ no.JoinLegionDiscord=Bli med i Legion-seriens Discord-fellesskap
 no.JoinOfficialDiscord=Bli med i det offisielle Discord-fellesskapet
 no.SecurePathPageNote=Installasjon utenfor en beskyttet mappe som Program Files vil deaktivere UIAccess-funksjoner, inkludert OSD-overlegg og varslingsheving, på Windows 11 23H2 og eldre. På nyere Windows-versjoner vil Windows blokkere programmet fra å starte helt.
 no.SecurePathWarning=Installasjon utenfor en beskyttet mappe som Program Files vil deaktivere funksjoner som krever UIAccess, inkludert OSD-overlegg og varslingsheving, på Windows 11 23H2 og eldre. På nyere Windows-versjoner vil dette føre to at Windows blokkerer programmet fra å starte helt på grunn av strengere sikkerhetsregler.%n%nEr du sikker på at du vil installere i denne mappen likevel?
-no.UninstallKeepSettings=Vil du slette alle Lenovo Legion Toolkit-innstillinger, tilpasninger og konfigurasjoner?
+no.UninstallKeepSettings=Vil du slette alle Tomori Nao's Toolkit-innstillinger, tilpasninger og konfigurasjoner?
 no.VisitGitHub=Besøk GitHub-depotet
 
 pl.JoinLOQDiscord=Dołącz do społeczności Discord serii LOQ
@@ -381,7 +347,7 @@ pl.JoinLegionDiscord=Dołącz do społeczności Discord serii Legion
 pl.JoinOfficialDiscord=Dołącz do oficjalnej społeczności Discord
 pl.SecurePathPageNote=Instalacja poza folderem chronionym, takim jak Program Files, wyłączy funkcje UIAccess, w tym nakładkę OSD i podnoszenie uprawnień powiadomień, w systemie Windows 11 23H2 i starszych. W nowszych wersjach systemu Windows spowoduje to całkowite zablokowanie uruchamiania aplikacji przez system Windows.
 pl.SecurePathWarning=Instalacja poza folderem chronionym, takim jak Program Files, wyłączy funkcje zależne od UIAccess, w tym nakładkę OSD i podnoszenie uprawnień powiadomień, w systemie Windows 11 23H2 i starszych. W nowszych wersjach systemu Windows spowoduje to całkowite zablokowanie uruchamiania aplikacji przez system Windows z powodu ostrzejszych zasad bezpieczeństwa.%n%nCzy na pewno chcesz mimo to zainstalować w tym folderze?
-pl.UninstallKeepSettings=Czy chcesz usunąć wszystkie ustawienia, dostosowania i konfiguracje Lenovo Legion Toolkit?
+pl.UninstallKeepSettings=Czy chcesz usunąć wszystkie ustawienia, dostosowania i konfiguracje Tomori Nao's Toolkit?
 pl.VisitGitHub=Odwiedź repozytorium GitHub
 
 pt.JoinLOQDiscord=Aderir à comunidade do Discord da série LOQ
@@ -389,7 +355,7 @@ pt.JoinLegionDiscord=Aderir à comunidade do Discord da série Legion
 pt.JoinOfficialDiscord=Aderir à comunidade oficial do Discord
 pt.SecurePathPageNote=A instalação fora de uma pasta protegida como Program Files desativará as funcionalidades UIAccess, incluindo a sobreposição OSD e a elevação de notificações, no Windows 11 23H2 e anterior. Em versões mais recentes do Windows, isso fará com que o Windows bloqueie o arranque da aplicação por completo.
 pt.SecurePathWarning=A instalação fora de uma pasta protegida como Program Files desativará as funcionalidades que dependem de UIAccess, incluindo a sobreposição OSD e a elevação de notificações, no Windows 11 23H2 e anterior. Em versões mais recentes do Windows, isso fará com que o Windows bloqueie o arranque da aplicação por completo devido a políticas de segurança mais rigorosas.%n%nTem a certeza de que deseja instalar nesta pasta de qualquer forma?
-pt.UninstallKeepSettings=Deseja eliminar todas as definições, personalizações e configurações do Lenovo Legion Toolkit?
+pt.UninstallKeepSettings=Deseja eliminar todas as definições, personalizações e configurações do Tomori Nao's Toolkit?
 pt.VisitGitHub=Visitar o repositório GitHub
 
 ptbr.JoinLOQDiscord=Participar da comunidade do Discord da série LOQ
@@ -397,7 +363,7 @@ ptbr.JoinLegionDiscord=Participar da comunidade do Discord da série Legion
 ptbr.JoinOfficialDiscord=Participar da comunidade oficial do Discord
 ptbr.SecurePathPageNote=A instalação fora de uma pasta protegida como Program Files desativará os recursos do UIAccess, incluindo a sobreposição OSD e a elevação de notificações, no Windows 11 23H2 e anterior. Em versões mais recentes do Windows, isso fará com que o Windows bloqueie totalmente a inicialização do aplicativo.
 ptbr.SecurePathWarning=A instalação fora de uma pasta protegida como Program Files desativará recursos que dependem do UIAccess, incluindo a sobreposição OSD e a elevação de notificações, no Windows 11 23H2 e anterior. Em versões mais recentes do Windows, isso fará com que o Windows bloqueie totalmente a inicialização do aplicativo devido a políticas de segurança mais rígidas.%n%nTem certeza de que deseja instalar nesta pasta mesmo assim?
-ptbr.UninstallKeepSettings=Deseja excluir todas as configurações, personalizações e ajustes do Lenovo Legion Toolkit?
+ptbr.UninstallKeepSettings=Deseja excluir todas as configurações, personalizações e ajustes do Tomori Nao's Toolkit?
 ptbr.VisitGitHub=Visitar o repositório do GitHub
 
 ro.JoinLOQDiscord=Alăturați-vă comunității Discord a seriei LOQ
@@ -405,7 +371,7 @@ ro.JoinLegionDiscord=Alăturați-vă comunității Discord a seriei Legion
 ro.JoinOfficialDiscord=Alăturați-vă comunității oficiale Discord
 ro.SecurePathPageNote=Instalarea în afara unui folder protejat cum ar fi Program Files va dezactiva caracteristicile UIAccess, inclusiv suprapunerea OSD și ridicarea notificărilor, pe Windows 11 23H2 și versiunile anterioare. Pe versiunile de Windows mai noi, acest lucru va determina Windows să blocheze complet lansarea aplicației.
 ro.SecurePathWarning=Instalarea în afara unui folder protejat cum ar fi Program Files va dezactiva caracteristicile care depind de UIAccess, inclusiv suprapunerea OSD și ridicarea notificărilor, pe Windows 11 23H2 și versiunile anterioare. Pe versiunile de Windows mai noi, acest lucru va determina Windows să blocheze complet lansarea aplicației din cauza politicilor de securitate mai stricte.%n%nSunteți sigur că doriți să instalați în acest folder oricum?
-ro.UninstallKeepSettings=Doriți să ștergeți toate setările, personalizările și configurațiile Lenovo Legion Toolkit?
+ro.UninstallKeepSettings=Doriți să ștergeți toate setările, personalizările și configurațiile Tomori Nao's Toolkit?
 ro.VisitGitHub=Vizitați depozitul GitHub
 
 ru.JoinLOQDiscord=Присоединиться к сообществу Discord серии LOQ
@@ -413,7 +379,7 @@ ru.JoinLegionDiscord=Присоединиться к сообществу Discor
 ru.JoinOfficialDiscord=Присоединиться к официальному сообществу Discord
 ru.SecurePathPageNote=Установка вне защищенной папки, такой как Program Files, отключит функции UIAccess, включая экранное меню OSD и повышение уведомлений, в Windows 11 23H2 и более ранних версиях. В более новых версиях Windows это приведет к полной блокировке запуска приложения системой.
 ru.SecurePathWarning=Установка вне защищенной папки, такой как Program Files, отключит функции, использующие UIAccess, включая экранное меню OSD и повышение уведомлений, в Windows 11 23H2 и более ранних версиях. В более новых версиях Windows это приведет к полной блокировке запуска приложения системой из-за более строгих политик безопасности.%n%nВы действительно хотите установить программу в эту папку?
-ru.UninstallKeepSettings=Вы хотите удалить все настройки, персонализации и конфигурации Lenovo Legion Toolkit?
+ru.UninstallKeepSettings=Вы хотите удалить все настройки, персонализации и конфигурации Tomori Nao's Toolkit?
 ru.VisitGitHub=Посетить репозиторий GitHub
 
 sk.JoinLOQDiscord=Pripojiť sa k Discord komunite radu LOQ
@@ -421,7 +387,7 @@ sk.JoinLegionDiscord=Pripojiť sa k Discord komunite radu Legion
 sk.JoinOfficialDiscord=Pripojiť sa k oficiálnej Discord komunite
 sk.SecurePathPageNote=Inštalácia mimo chráneného priečinka, ako je Program Files, zakáže funkcie UIAccess, vrátane OSD prekrytia a zvýšenia oprávnení oznámení, v systéme Windows 11 23H2 a starších. Na novších verziách systému Windows to spôsobí, že Windows aplikáciu úplne zablokuje.
 sk.SecurePathWarning=Inštalácia mimo chráneného priečinka, ako je Program Files, zakáže funkcie závislé od UIAccess, vrátane OSD prekrytia a zvýšenia oprávnení oznámení, v systéme Windows 11 23H2 a starších. Na novších verziách systému Windows to spôsobí, že Windows aplikáciu úplne zablokuje z dôvodu prísnejších bezpečnostných pravidiel.%n%nNaozaj chcete napriek tomu inštalovať do tohto priečinka?
-sk.UninstallKeepSettings=Chcete vymazať všetky nastavenia, prispôsobenia a konfigurácie Lenovo Legion Toolkit?
+sk.UninstallKeepSettings=Chcete vymazať všetky nastavenia, prispôsobenia a konfigurácie Tomori Nao's Toolkit?
 sk.VisitGitHub=Navštíviť GitHub repozitár
 
 tr.JoinLOQDiscord=LOQ Serisi Discord Topluluğuna Katıl
@@ -429,7 +395,7 @@ tr.JoinLegionDiscord=Legion Serisi Discord Topluluğuna Katıl
 tr.JoinOfficialDiscord=Resmi Discord Topluluğuna Katıl
 tr.SecurePathPageNote=Program Files gibi korumalı bir klasörün dışına yükleme yapmak, Windows 11 23H2 ve önceki sürümlerde OSD yerleşimi ve bildirim yükseltme gibi UIAccess özelliklerini devre dışı bırakır. Daha yeni Windows sürümlerinde ise bu durum Windows'un uygulamayı başlatmasını tamamen engeller.
 tr.SecurePathWarning=Program Files gibi korumalı bir klasörün dışına yükleme yapmak, Windows 11 23H2 ve önceki sürümlerde OSD yerleşimi ve bildirim yükseltme gibi UIAccess gerektiren özellikleri devre dışı bırakır. Daha yeni Windows sürümlerinde ise daha katı güvenlik politikaları nedeniyle Windows'un uygulamayı başlatmasını tamamen engeller.%n%nYine de bu klasöre yüklemek istediğinizden emin misiniz?
-tr.UninstallKeepSettings=Tüm Lenovo Legion Toolkit ayarlarını, özelleştirmelerini ve yapılandırmalarını silmek istiyor musunuz?
+tr.UninstallKeepSettings=Tüm Tomori Nao's Toolkit ayarlarını, özelleştirmelerini ve yapılandırmalarını silmek istiyor musunuz?
 tr.VisitGitHub=GitHub Deposunu Ziyaret Et
 
 ukr.JoinLOQDiscord=Приєднатися до спільноти Discord серії LOQ
@@ -437,7 +403,7 @@ ukr.JoinLegionDiscord=Приєднатися до спільноти Discord с�
 ukr.JoinOfficialDiscord=Приєднатися до офіційної спільноти Discord
 ukr.SecurePathPageNote=Встановлення поза захищеною папкою, такою як Program Files, вимкне функції UIAccess, включаючи екранне меню OSD та підвищення сповіщень, у Windows 11 23H2 та старіших версіях. У новіших версіях Windows це призведе до повного блокування запуску програми системою.
 ukr.SecurePathWarning=Встановлення поза захищеною папкою, такою як Program Files, вимкне функції, що використовують UIAccess, включаючи екранне меню OSD та підвищення сповіщень, у Windows 11 23H2 та старіших версіях. У новіших версіях Windows це призведе до повного блокування запуску програми системою через суворішу політику безпеки.%n%nВи дійсно бажаєте встановити програму в цю папку?
-ukr.UninstallKeepSettings=Бажаєте видалити всі налаштування, персоналізації та конфігурації Lenovo Legion Toolkit?
+ukr.UninstallKeepSettings=Бажаєте видалити всі налаштування, персоналізації та конфігурації Tomori Nao's Toolkit?
 ukr.VisitGitHub=Відвідати репозиторій GitHub
 
 uz.JoinLOQDiscord=LOQ seriyasining Discord hamjamiyatiga qo'shiling
@@ -445,7 +411,7 @@ uz.JoinLegionDiscord=Legion seriyasining Discord hamjamiyatiga qo'shiling
 uz.JoinOfficialDiscord=Rasmiy Discord hamjamiyatiga qo'shiling
 uz.SecurePathPageNote=Program Files kabi himoyalangan jilddan tashqariga o'rnatish Windows 11 23H2 va undan pastroq versiyalarda UIAccess funktsiyalarini, shu jumladan OSD qoplamasi va bildirishnomalarni oshirishni o'chirib qo'yadi. Yangi Windows versiyalarida bu Windows-ning dasturni ishga tushirishini butunlay bloklaydi.
 uz.SecurePathWarning=Program Files kabi himoyalangan jilddan tashqariga o'rnatish Windows 11 23H2 va undan pastroq versiyalarda UIAccess-ga tayanadigan funktsiyalarni, shu jumladan OSD qoplamasi va bildirishnomalarni oshirishni o'chirib qo'yadi. Yangi Windows versiyalarida bu qat'iy xavfsizlik siyosati tufayli Windows-ning dasturni ishga tushirishini butunlay bloklaydi.%n%nBaribir ushbu jildga o'rnatmoqchimisiz?
-uz.UninstallKeepSettings=Lenovo Legion Toolkit-ning barcha sozlamalari, moslashtirishlari va konfiguratsiyalarini o'chirib tashlamoqchimisiz?
+uz.UninstallKeepSettings=Tomori Nao's Toolkit-ning barcha sozlamalari, moslashtirishlari va konfiguratsiyalarini o'chirib tashlamoqchimisiz?
 uz.VisitGitHub=GitHub omboriga tashrif buyuring
 
 vi.JoinLOQDiscord=Tham gia cộng đồng Discord của dòng LOQ
@@ -453,7 +419,7 @@ vi.JoinLegionDiscord=Tham gia cộng đồng Discord của dòng Legion
 vi.JoinOfficialDiscord=Tham gia cộng đồng Discord chính thức
 vi.SecurePathPageNote=Việc cài đặt bên ngoài một thư mục được bảo vệ như Program Files sẽ vô hiệu hóa các tính năng UIAccess, bao gồm lớp phủ OSD và nâng cao thông báo, trên Windows 11 23H2 trở xuống. Trên các phiên bản Windows mới hơn, điều này sẽ khiến Windows chặn hoàn toàn việc khởi chạy ứng dụng.
 vi.SecurePathWarning=Việc cài đặt bên ngoài một thư mục được bảo vệ như Program Files sẽ vô hiệu hóa các tính năng dựa trên UIAccess, bao gồm lớp phủ OSD và nâng cao thông báo, trên Windows 11 23H2 trở xuống. Trên các phiên bản Windows mới hơn, điều này sẽ khiến Windows chặn hoàn toàn việc khởi chạy ứng dụng do các chính sách bảo mật nghiêm ngặt hơn.%n%nBạn có chắc chắn vẫn muốn cài đặt vào thư mục này không?
-vi.UninstallKeepSettings=Bạn có muốn xóa tất cả cài đặt, tùy chỉnh và cấu hình của Lenovo Legion Toolkit không?
+vi.UninstallKeepSettings=Bạn có muốn xóa tất cả cài đặt, tùy chỉnh và cấu hình của Tomori Nao's Toolkit không?
 vi.VisitGitHub=Tru cập kho lưu trữ GitHub
 
 zhhans.JoinLOQDiscord=加入 LOQ 系列 Discord 社区
@@ -461,7 +427,7 @@ zhhans.JoinLegionDiscord=加入 Legion 系列 Discord 社区
 zhhans.JoinOfficialDiscord=加入官方 Discord 社区
 zhhans.SecurePathPageNote=安装在受保护的文件夹例如 Program Files 之外，在 Windows 11 23H2 及以下版本中将禁用 UIAccess 功能，包括 OSD 覆盖和通知提升。在较新的 Windows 版本中，这会导致 Windows 完全阻止应用程序启动。
 zhhans.SecurePathWarning=安装在受保护的文件夹例如 Program Files 之外，在 Windows 11 23H2 及以下版本中将禁用依赖 UIAccess 的功能，包括 OSD 覆盖和通知提升。在较新的 Windows 版本中，由于更严格的安全策略，这会导致 Windows 完全阻止应用程序启动。%n%n您确定仍要安装到此文件夹吗？
-zhhans.UninstallKeepSettings=您是否要删除所有 Lenovo Legion Toolkit 设置、自定义和配置？
+zhhans.UninstallKeepSettings=您是否要删除所有 Tomori Nao's Toolkit 设置、自定义和配置？
 zhhans.VisitGitHub=访问 GitHub 仓库
 
 zhhant.JoinLOQDiscord=加入 LOQ 系列 Discord 社群
@@ -469,7 +435,7 @@ zhhant.JoinLegionDiscord=加入 Legion 系列 Discord 社群
 zhhant.JoinOfficialDiscord=加入官方 Discord 社群
 zhhant.SecurePathPageNote=安裝在受保護的資料夾例如 Program Files 之外，在 Windows 11 23H2 及以下版本中將停用 UIAccess 功能，包括 OSD 覆蓋 and 通知提升。在較新的 Windows 版本中，這會導致 Windows 完全阻止應用程式啟動。
 zhhant.SecurePathWarning=安裝在受保護的資料夾例如 Program Files 之外，在 Windows 11 23H2 及以下版本中將停用依賴 UIAccess 的功能，包括 OSD 覆蓋和通知提升。在較新的 Windows 版本中，由於更嚴格的安全策略，這會導致 Windows 完全阻止應用程式啟動。%n%n您確定仍要安裝到此資料夾嗎？
-zhhant.UninstallKeepSettings=您是否要刪除所有 Lenovo Legion Toolkit 設定、自訂和配置？
+zhhant.UninstallKeepSettings=您是否要刪除所有 Tomori Nao's Toolkit 設定、自訂和配置？
 zhhant.VisitGitHub=訪問 GitHub 倉庫
 
 [Languages]
@@ -511,11 +477,15 @@ Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
 [InstallDelete]
 ; Safely remove legacy installation from %LOCALAPPDATA%\Programs without touching user settings
+Type: filesandordirs; Name: "{userpf}\{#MyAppDataFolder}"
 Type: filesandordirs; Name: "{userpf}\{#MyAppNameCompact}"
+; Remove stale legacy shortcuts sharing the same AppUserModelID so Windows Taskbar resolves the new icon cleanly
+Type: files; Name: "{autoprograms}\Lenovo Legion Toolkit.lnk"
+Type: files; Name: "{autodesktop}\Lenovo Legion Toolkit.lnk"
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; AppUserModelID: "eef45acd-2cf3-4d7d-9d33-92f37c74cc31_6qs7aha96dxnt!App"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; AppUserModelID: "eef45acd-2cf3-4d7d-9d33-92f37c74cc31_6qs7aha96dxnt!App"
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; IconIndex: 0; AppUserModelID: "eef45acd-2cf3-4d7d-9d33-92f37c74cc31_6qs7aha96dxnt!App"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; IconIndex: 0; Tasks: desktopicon; AppUserModelID: "eef45acd-2cf3-4d7d-9d33-92f37c74cc31_6qs7aha96dxnt!App"
 
 [Run]
 ; Unregister existing package identity (required for upgrades)
@@ -526,6 +496,8 @@ Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Com
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""Import-Certificate -FilePath '{app}\LenovoLegionToolkit.cer' -CertStoreLocation 'Cert:\LocalMachine\Root'"""; Flags: runhidden; StatusMsg: "Trusting application root certificate..."
 ; Register the Sparse Package identity (conditional: use .msix if present, else raw manifest)
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""if (Test-Path '{app}\LenovoLegionToolkit.LampArray.msix') {{ Add-AppxPackage -Path '{app}\LenovoLegionToolkit.LampArray.msix' -ExternalLocation '{app}' } else {{ Add-AppxPackage -Register '{app}\AppxManifest.xml' -ExternalLocation '{app}' }"""; Flags: runhidden; StatusMsg: "Registering application identity..."
+; Refresh Windows Shell icon cache so Taskbar & Start Menu immediately display the updated icon
+Filename: "{sys}\ie4uinit.exe"; Parameters: "-show"; Flags: runhidden skipifdoesntexist
 
 Filename: "rundll32.exe"; Parameters: "shell32.dll,ShellExec_RunDLL ""{app}\{#MyAppExeName}"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
 

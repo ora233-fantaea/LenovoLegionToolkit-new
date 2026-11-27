@@ -36,6 +36,12 @@
 
         <TextBlock x:Name="_copyright" Focusable="True" />
         <TextBlock
+            Padding="0,6,0,0"
+            Focusable="True"
+            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+            Text="Based on Lenovo Legion Toolkit by Bartosz Cichecki &amp; LenovoLegionToolkit-Team — Modified and distributed under the GNU GPL v3.0."
+            TextWrapping="Wrap" />
+        <TextBlock
             x:Name="_translationCredit"
             Padding="0,8,0,0"
             Text="{x:Static resources:Resource.AboutPage_TranslationCredit}" />

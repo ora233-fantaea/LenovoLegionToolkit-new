@@ -490,3 +490,7 @@ FodyWeavers.xsd
 # Local HID tracing utility
 /tools/HidSetFeatureTrace/
 /CapabilityProbe
+
+# Local OSD preview artifacts
+/OSD_Overview/
+/OSD_Preview/

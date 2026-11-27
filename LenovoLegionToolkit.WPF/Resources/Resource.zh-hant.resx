@@ -121,7 +121,7 @@
     <value>應用程式資料夾</value>
   </data>
   <data name="AboutPage_AppName" xml:space="preserve">
-    <value>Lenovo Legion 工具套件</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="AboutPage_Build" xml:space="preserve">
     <value>構建</value>
@@ -335,7 +335,7 @@
     <value>套用 &amp; 關閉</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>Lenovo Legion 工具套件</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="ArgumentWindow_Category_Debugging" xml:space="preserve">
     <value>偵錯</value>

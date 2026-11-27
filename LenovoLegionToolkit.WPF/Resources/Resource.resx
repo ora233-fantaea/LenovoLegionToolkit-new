@@ -121,7 +121,7 @@
     <value>Application Folders</value>
   </data>
   <data name="AboutPage_AppName" xml:space="preserve">
-    <value>Lenovo Legion Toolkit</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="AboutPage_Build" xml:space="preserve">
     <value>Build</value>
@@ -335,7 +335,7 @@
     <value>Apply &amp; Close</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>Lenovo Legion Toolkit</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="ArgumentWindow_Category_Debugging" xml:space="preserve">
     <value>Debugging</value>
@@ -428,7 +428,7 @@
     <value>Enable</value>
   </data>
   <data name="AutomationPage_ActionsEnable_Message" xml:space="preserve">
-    <value>Lenovo Legion Toolkit must be running for automatic actions to work.</value>
+    <value>Tomori Nao's Toolkit must be running for automatic actions to work.</value>
   </data>
   <data name="AutomationPage_Actions_Empty" xml:space="preserve">
     <value>No Actions defined. Click "Add new" to create new Action.</value>
@@ -811,7 +811,7 @@ This time might not be accurate, if laptop was charged when sleeping or off.</va
     <value>Close</value>
   </data>
   <data name="CloseAppAutomationStepControl_Message" xml:space="preserve">
-    <value>Close the Lenovo Legion Toolkit</value>
+    <value>Close the Tomori Nao's Toolkit</value>
   </data>
   <data name="CloseAppAutomationStepControl_Title" xml:space="preserve">
     <value>Close App</value>
@@ -1192,7 +1192,7 @@ Thank you for your support!</value>
     <value>Uncheck refresh rates that you do not want to use when Fn+R shortcut is used.</value>
   </data>
   <data name="ExcludeRefreshRatesWindow_NoRefreshRatesFound_Message" xml:space="preserve">
-    <value>Make sure that laptop display is on. Lenovo Legion Toolkit can't load refresh rates for a display that is not on.</value>
+    <value>Make sure that laptop display is on. Tomori Nao's Toolkit can't load refresh rates for a display that is not on.</value>
   </data>
   <data name="ExcludeRefreshRatesWindow_NoRefreshRatesFound_Title" xml:space="preserve">
     <value>No Refresh Rates found</value>
@@ -1790,7 +1790,7 @@ Click Yes to disable and No to ignore.</value>
     <value>Macro</value>
   </data>
   <data name="MacroPage_Enable_Subtitle" xml:space="preserve">
-    <value>Lenovo Legion Toolkit must be running for macros to work.</value>
+    <value>Tomori Nao's Toolkit must be running for macros to work.</value>
   </data>
   <data name="MacroPage_Enable_Title" xml:space="preserve">
     <value>Enable</value>
@@ -3490,7 +3490,7 @@ Performance mode can also be changed with Fn+Q.</value>
     <value>Switch to Custom Mode with Fn+Q</value>
   </data>
   <data name="ShowAppAutomationStepControl_Message" xml:space="preserve">
-    <value>Show the Lenovo Legion Toolkit</value>
+    <value>Show the Tomori Nao's Toolkit</value>
   </data>
   <data name="ShowAppAutomationStepControl_Title" xml:space="preserve">
     <value>Show App</value>
@@ -3842,7 +3842,7 @@ Logging will be enabled automatically, if you choose to continue.</value>
     <value>Machine Type</value>
   </data>
   <data name="UnsupportedWindow_Message" xml:space="preserve">
-    <value>Lenovo Legion Toolkit has not been tested with your device.</value>
+    <value>Tomori Nao's Toolkit has not been tested with your device.</value>
   </data>
   <data name="UnsupportedWindow_Model" xml:space="preserve">
     <value>Model</value>
@@ -3974,7 +3974,7 @@ Logging will be enabled automatically, if you choose to continue.</value>
     <value>Temperature curve</value>
   </data>
   <data name="FanCurvePage_Curve_Message" xml:space="preserve">
-    <value>Drag points (snaps to 5°C / 5%, hold Shift for 1°C / 1% precision). Double-click to add a point, right-click or press Delete to remove.</value>
+    <value>Drag points smoothly with automatic neighbor push (hold Ctrl to snap to 5°C / 5%). Drag the curve to shift vertically, scroll on a point to fine-tune, double-click a point to edit or empty space to add, right-click or press Delete to remove.</value>
   </data>
   <data name="FanCurvePage_Preset_Quiet" xml:space="preserve">
     <value>Quiet</value>

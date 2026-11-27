@@ -16,8 +16,8 @@
 	ProcessorArchitecture="neutral" />
 
   <Properties>
-	<DisplayName>Lenovo Legion Toolkit</DisplayName>
-	<PublisherDisplayName>Lenovo Legion Toolkit</PublisherDisplayName>
+	<DisplayName>Tomori Nao's Toolkit</DisplayName>
+	<PublisherDisplayName>Tomori Nao's Toolkit</PublisherDisplayName>
 	<Logo>Images\StoreLogo.png</Logo>
 	<uap10:AllowExternalContent>true</uap10:AllowExternalContent>
   </Properties>
@@ -32,12 +32,12 @@
 
   <Applications>
 	<Application Id="App"
-	  Executable="Lenovo Legion Toolkit.exe"
+	  Executable="TomoriNaoToolkit.exe"
 	  uap10:TrustLevel="mediumIL"
 	  uap10:RuntimeBehavior="win32App">
     <uap:VisualElements
-      DisplayName="Lenovo Legion Toolkit"
-      Description="Lenovo Legion Toolkit"
+      DisplayName="Tomori Nao's Toolkit"
+      Description="Tomori Nao's Toolkit"
       BackgroundColor="transparent"
       Square150x150Logo="Images\Square150x150Logo.png"
       Square44x44Logo="Images\Square44x44Logo.png"

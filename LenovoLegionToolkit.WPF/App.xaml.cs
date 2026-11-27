@@ -383,7 +383,7 @@ public partial class App
         {
             try
             {
-                MessageBox.Show(errorMsg, "Lenovo Legion Toolkit - Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(errorMsg, "Tomori Nao's Toolkit - Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch { /* Ignore */ }
         }

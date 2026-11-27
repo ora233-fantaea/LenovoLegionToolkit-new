@@ -543,6 +543,7 @@ public class GameAutoListener : AbstractAutoListener<GameAutoListener.ChangedEve
 
         return processName.Equals("explorer", StringComparison.OrdinalIgnoreCase)
                || processName.Equals("Lenovo Legion Toolkit", StringComparison.OrdinalIgnoreCase)
+               || processName.Equals("TomoriNaoToolkit", StringComparison.OrdinalIgnoreCase)
                || processName.Equals("SearchUI", StringComparison.OrdinalIgnoreCase)
                || processName.Equals("LockApp", StringComparison.OrdinalIgnoreCase)
                || processName.Equals("TextInputHost", StringComparison.OrdinalIgnoreCase)

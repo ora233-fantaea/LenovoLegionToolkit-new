@@ -121,7 +121,7 @@
     <value>Φάκελοι εφαρμογής</value>
   </data>
   <data name="AboutPage_AppName" xml:space="preserve">
-    <value>Lenovo Legion Toolkit (Ανεπίσημη Διακλάδωση)</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="AboutPage_Build" xml:space="preserve">
     <value>Κατασκευή</value>
@@ -335,7 +335,7 @@
     <value>Εφαρμογή και κλείσιμο</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>Lenovo Legion Toolkit</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="ArgumentWindow_Category_Debugging" xml:space="preserve">
     <value>Αποσφαλμάτωση</value>

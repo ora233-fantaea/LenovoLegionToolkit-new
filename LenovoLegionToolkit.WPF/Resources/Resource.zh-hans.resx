@@ -121,7 +121,7 @@
     <value>应用数据文件夹</value>
   </data>
   <data name="AboutPage_AppName" xml:space="preserve">
-    <value>Lenovo Legion Toolkit (Unofficial Fork)</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="AboutPage_Build" xml:space="preserve">
     <value>构建版本</value>
@@ -337,7 +337,7 @@
     <value>应用并关闭</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>拯救者工具箱 Lenovo Legion Toolkit</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="ArgumentWindow_Category_Debugging" xml:space="preserve">
     <value>调试</value>
@@ -812,7 +812,7 @@
     <value>关闭</value>
   </data>
   <data name="CloseAppAutomationStepControl_Message" xml:space="preserve">
-    <value>关闭 Lenovo Legion Toolkit</value>
+    <value>关闭 Tomori Nao's Toolkit</value>
   </data>
   <data name="CloseAppAutomationStepControl_Title" xml:space="preserve">
     <value>关闭应用程序</value>
@@ -3509,7 +3509,7 @@
     <value>使用 Fn+Q 切换至自定义模式</value>
   </data>
   <data name="ShowAppAutomationStepControl_Message" xml:space="preserve">
-    <value>显示 Lenovo Legion Toolkit</value>
+    <value>显示 Tomori Nao's Toolkit</value>
   </data>
   <data name="ShowAppAutomationStepControl_Title" xml:space="preserve">
     <value>显示应用程序</value>
@@ -3861,7 +3861,7 @@
     <value>设备类型</value>
   </data>
   <data name="UnsupportedWindow_Message" xml:space="preserve">
-    <value>Lenovo Legion Toolkit 尚未在您的设备上经过测试。</value>
+    <value>Tomori Nao's Toolkit 尚未在您的设备上经过测试。</value>
   </data>
   <data name="UnsupportedWindow_Model" xml:space="preserve">
     <value>设备型号</value>
@@ -3993,7 +3993,7 @@
     <value>温控曲线</value>
   </data>
   <data name="FanCurvePage_Curve_Message" xml:space="preserve">
-    <value>拖动节点调节（默认 5°C / 5% 网格吸附，按住 Shift 精调）；双击空白处新增节点，右键节点或按 Delete 删除。</value>
+    <value>拖动节点顺滑调节并自动推挤相邻点（按住 Ctrl 吸附 5°C / 5%）；拖动曲线整体上下平移；悬停节点滚轮微调、双击节点改数值、双击空白新增、右键或 Delete 删除。</value>
   </data>
   <data name="FanCurvePage_Preset_Quiet" xml:space="preserve">
     <value>静音</value>

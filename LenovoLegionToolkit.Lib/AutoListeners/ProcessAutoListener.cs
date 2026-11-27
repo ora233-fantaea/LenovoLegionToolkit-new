@@ -32,6 +32,7 @@ public class ProcessAutoListener(
         "conhost",
         "dllhost",
         "Lenovo Legion Toolkit",
+        "TomoriNaoToolkit",
         "msedge",
         "msedgewebview2",
         "NvOAWrapperCache",

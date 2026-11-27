@@ -121,7 +121,7 @@
     <value>애플리케이션 폴더</value>
   </data>
   <data name="AboutPage_AppName" xml:space="preserve">
-    <value>Lenovo Legion Toolkit (Unofficial Fork)</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="AboutPage_Build" xml:space="preserve">
     <value>빌드</value>
@@ -335,7 +335,7 @@
     <value>적용 및 닫기</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>Lenovo Legion Toolkit</value>
+    <value>Tomori Nao's Toolkit</value>
   </data>
   <data name="ArgumentWindow_Category_Debugging" xml:space="preserve">
     <value>디버깅</value>
