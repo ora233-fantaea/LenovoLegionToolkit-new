@@ -55,10 +55,10 @@ public class NotificationWindow : UiWindow, INotificationWindow
         VerticalContentAlignment = VerticalAlignment.Center,
     };
 
-    public NotificationWindow(SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor, Action? clickAction, ScreenInfo screenInfo, NotificationPosition position)
+    public NotificationWindow(SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor, Action? clickAction, ScreenInfo screenInfo, NotificationPosition position, string? imageUri = null)
     {
         InitializeStyle();
-        InitializeContent(symbol, overlaySymbol, symbolTransform, text, textColor);
+        InitializeContent(symbol, overlaySymbol, symbolTransform, text, textColor, imageUri);
 
         ShowInTaskbar = false;
         SourceInitialized += OnSourceInitialized;
@@ -185,28 +185,67 @@ public class NotificationWindow : UiWindow, INotificationWindow
         PInvoke.SetWindowPos((HWND)windowInteropHandler.Handle, HWND.Null, (int)nativeLeft, (int)nativeTop, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 
-    private void InitializeContent(SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor)
+    private void InitializeContent(SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor, string? imageUri)
     {
-        _symbolIcon.Symbol = symbol;
         _textBlock.Content = text;
 
         if (textColor is not null)
             _textBlock.Foreground = textColor;
 
-        Grid.SetColumn(_symbolIcon, 0);
         Grid.SetColumn(_textBlock, 1);
-
-        _mainGrid.Children.Add(_symbolIcon);
         _mainGrid.Children.Add(_textBlock);
 
-        if (overlaySymbol.HasValue)
+        var imageAdded = false;
+        if (!string.IsNullOrEmpty(imageUri))
         {
-            _overlaySymbolIcon.Symbol = overlaySymbol.Value;
-            Grid.SetColumn(_overlaySymbolIcon, 0);
-            _mainGrid.Children.Add(_overlaySymbolIcon);
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(imageUri, UriKind.Absolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.DecodePixelWidth = 128;
+                bitmap.EndInit();
+                bitmap.Freeze();
+
+                var image = new Image
+                {
+                    Source = bitmap,
+                    Width = 48,
+                    Height = 48,
+                    Margin = new Thickness(0, 0, 14, 0),
+                    Stretch = Stretch.Uniform,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    SnapsToDevicePixels = true,
+                };
+                RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+
+                _mainGrid.Margin = new Thickness(14, 10, 28, 10);
+                Grid.SetColumn(image, 0);
+                _mainGrid.Children.Add(image);
+                imageAdded = true;
+            }
+            catch
+            {
+                imageAdded = false;
+            }
         }
 
-        symbolTransform?.Invoke(_symbolIcon);
+        if (!imageAdded)
+        {
+            _symbolIcon.Symbol = symbol;
+            Grid.SetColumn(_symbolIcon, 0);
+            _mainGrid.Children.Add(_symbolIcon);
+
+            if (overlaySymbol.HasValue)
+            {
+                _overlaySymbolIcon.Symbol = overlaySymbol.Value;
+                Grid.SetColumn(_overlaySymbolIcon, 0);
+                _mainGrid.Children.Add(_overlaySymbolIcon);
+            }
+
+            symbolTransform?.Invoke(_symbolIcon);
+        }
 
         Content = _mainGrid;
     }

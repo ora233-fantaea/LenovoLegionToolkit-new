@@ -179,11 +179,20 @@ public class NotificationsManager
                 _ => null
             };
 
+            var hasIconOverride = false;
             if (notification.Overrides?.IconOverride != null && Enum.IsDefined(typeof(SymbolRegular), notification.Overrides.IconOverride.Value))
+            {
                 symbol = (SymbolRegular)notification.Overrides.IconOverride.Value;
+                hasIconOverride = true;
+            }
             else if (_settings.Store.Notifications.IconOverrides.TryGetValue(notification.Type, out var iconOverride)
                 && Enum.IsDefined(typeof(SymbolRegular), iconOverride))
+            {
                 symbol = (SymbolRegular)iconOverride;
+                hasIconOverride = true;
+            }
+
+            var chibiImageUri = hasIconOverride ? null : GetDefaultChibiImageUri(notification.Type);
 
             if (notification.Overrides?.ColorOverride != null)
                 symbolTransform = si => si.Foreground = new SolidColorBrush(notification.Overrides.ColorOverride.Value.ToColor());
@@ -217,13 +226,13 @@ public class NotificationsManager
                     ? posOverride
                     : _settings.Store.NotificationPosition);
 
-            ShowNotification(duration, symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, effectivePosition);
+            ShowNotification(duration, symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, effectivePosition, chibiImageUri);
 
             Log.Instance.Trace($"Notification {notification} shown.");
         });
     }
 
-    private void ShowNotification(int duration, SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor, Action? clickAction, NotificationPosition position)
+    private void ShowNotification(int duration, SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor, Action? clickAction, NotificationPosition position, string? imageUri)
     {
         if (App.Current.MainWindow is not MainWindow mainWindow)
             return;
@@ -242,7 +251,7 @@ public class NotificationsManager
         {
             foreach (var screen in ScreenHelper.Screens)
             {
-                ShowOnScreen(screen, duration, symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, position);
+                ShowOnScreen(screen, duration, symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, position, imageUri);
             }
         }
         else
@@ -250,14 +259,14 @@ public class NotificationsManager
             var primaryScreen = ScreenHelper.PrimaryScreen;
             if (primaryScreen.HasValue)
             {
-                ShowOnScreen(primaryScreen.Value, duration, symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, position);
+                ShowOnScreen(primaryScreen.Value, duration, symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, position, imageUri);
             }
         }
     }
 
-    private void ShowOnScreen(ScreenInfo screen, int duration, SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor, Action? clickAction, NotificationPosition position)
+    private void ShowOnScreen(ScreenInfo screen, int duration, SymbolRegular symbol, SymbolRegular? overlaySymbol, Action<SymbolIcon>? symbolTransform, string text, Brush? textColor, Action? clickAction, NotificationPosition position, string? imageUri)
     {
-        var nw = new NotificationWindow(symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, screen, position);
+        var nw = new NotificationWindow(symbol, overlaySymbol, symbolTransform, text, textColor, clickAction, screen, position, imageUri);
         if (_settings.Store.NotificationAlwaysOnTop)
         {
             nw.SourceInitialized += (_, _) => nw.EscalateZBand();
@@ -266,6 +275,22 @@ public class NotificationsManager
         nw.Show(duration);
         _windows.Add(nw);
     }
+
+    private static string? GetDefaultChibiImageUri(NotificationType type) => type switch
+    {
+        NotificationType.PowerModeQuiet or NotificationType.ITSModeAuto => "pack://application:,,,/Assets/Notifications/quiet.png",
+        NotificationType.PowerModeBalance or NotificationType.ITSModeCool => "pack://application:,,,/Assets/Notifications/balance.png",
+        NotificationType.PowerModePerformance or NotificationType.ITSModePerformance => "pack://application:,,,/Assets/Notifications/performance.png",
+        NotificationType.PowerModeExtreme or NotificationType.PowerModeGodMode or NotificationType.ITSModeGeek => "pack://application:,,,/Assets/Notifications/custom.png",
+        NotificationType.ACAdapterConnected or NotificationType.ACAdapterConnectedLowWattage => "pack://application:,,,/Assets/Notifications/ac_power.png",
+        NotificationType.RefreshRate => "pack://application:,,,/Assets/Notifications/refresh_rate.png",
+        NotificationType.TouchpadOn => "pack://application:,,,/Assets/Notifications/touchpad_on.png",
+        NotificationType.TouchpadOff => "pack://application:,,,/Assets/Notifications/touchpad_off.png",
+        NotificationType.CapsLockOn => "pack://application:,,,/Assets/Notifications/capslock_on.png",
+        NotificationType.CapsLockOff => "pack://application:,,,/Assets/Notifications/capslock_off.png",
+        NotificationType.FnLockOn => "pack://application:,,,/Assets/Notifications/fnlock_on.png",
+        _ => null,
+    };
 
     internal static SymbolRegular GetDefaultSymbol(NotificationType type) => type switch
     {
