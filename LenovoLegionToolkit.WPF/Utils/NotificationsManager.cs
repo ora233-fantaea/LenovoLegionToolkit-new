@@ -289,6 +289,9 @@ public class NotificationsManager
         NotificationType.CapsLockOn => "pack://application:,,,/Assets/Notifications/capslock_on.png",
         NotificationType.CapsLockOff => "pack://application:,,,/Assets/Notifications/capslock_off.png",
         NotificationType.FnLockOn => "pack://application:,,,/Assets/Notifications/fnlock_on.png",
+        NotificationType.FnLockOff => "pack://application:,,,/Assets/Notifications/fnlock_off.png",
+        NotificationType.NumLockOn => "pack://application:,,,/Assets/Notifications/numlock_on.png",
+        NotificationType.NumLockOff => "pack://application:,,,/Assets/Notifications/numlock_off.png",
         _ => null,
     };
 
