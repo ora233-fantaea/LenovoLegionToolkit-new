@@ -16,9 +16,10 @@ public partial class CustomFanCurveControl
 {
     private const double PADDING_X = 16;
     private const double PADDING_Y = 16;
-    private const double HANDLE_RADIUS = 7;
-    private const double SELECTED_HANDLE_RADIUS = 8.5;
-    private const double HIT_TEST_RADIUS = 22;
+    private const double HANDLE_RADIUS = 6.5;
+    private const double SELECTED_HANDLE_RADIUS = 8;
+    private const double HIT_TEST_RADIUS = 18;
+    private const double CURVE_HIT_DISTANCE = 9;
     private const int SNAP_TEMP = 5;
     private const int SNAP_SPEED = 5;
 
@@ -28,8 +29,16 @@ public partial class CustomFanCurveControl
     private int _selectedIndex = -1;
     private int _draggingIndex = -1;
     private int _hoveredIndex = -1;
+    private bool _hoveredCurve;
+    private bool _draggingWholeCurve;
+    private bool _dragModified;
+    private int _wholeCurveDeltaSpeed;
+    private Point _dragStartCanvasPos;
+    private List<FanCurvePoint>? _dragStartPoints;
+    private int _inlineEditingIndex = -1;
     private Point? _cursorCanvasPos;
     private int _criticalTemperature = 95;
+    private int _hysteresis = 3;
     private int _liveTemperature = -1;
     private double? _liveSpeed;
     private bool _isLiveActive;
@@ -46,6 +55,7 @@ public partial class CustomFanCurveControl
                 return;
 
             _selectedIndex = clamped;
+            HideInlineEditor();
             Redraw();
             SelectedPointChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -67,6 +77,20 @@ public partial class CustomFanCurveControl
         }
     }
 
+    public int Hysteresis
+    {
+        get => _hysteresis;
+        set
+        {
+            var clamped = Math.Clamp(value, 0, 20);
+            if (_hysteresis == clamped)
+                return;
+
+            _hysteresis = clamped;
+            Redraw();
+        }
+    }
+
     public event EventHandler? CurveChanged;
     public event EventHandler? CurveCommitted;
     public event EventHandler? SelectedPointChanged;
@@ -82,6 +106,8 @@ public partial class CustomFanCurveControl
 
     public void SetPoints(IEnumerable<FanCurvePoint> points, int selectedIndex = -1)
     {
+        HideInlineEditor();
+
         _points.Clear();
         _points.AddRange(FanCurve.Normalize(points));
 
@@ -89,7 +115,10 @@ public partial class CustomFanCurveControl
             ? selectedIndex
             : (_points.Count > 0 ? 0 : -1);
         _draggingIndex = -1;
+        _draggingWholeCurve = false;
+        _dragStartPoints = null;
         _hoveredIndex = -1;
+        _hoveredCurve = false;
 
         Redraw();
         SelectedPointChanged?.Invoke(this, EventArgs.Empty);
@@ -114,7 +143,7 @@ public partial class CustomFanCurveControl
         if (_selectedIndex < 0 || _selectedIndex >= _points.Count)
             return (FanCurve.MIN_TEMPERATURE, FanCurve.MAX_TEMPERATURE, 0, 100);
 
-        return GetPointBounds(_selectedIndex);
+        return GetPointPushBounds(_selectedIndex);
     }
 
     public void UpdateSelectedPoint(int temperature, int speed)
@@ -122,7 +151,7 @@ public partial class CustomFanCurveControl
         if (_selectedIndex < 0 || _selectedIndex >= _points.Count)
             return;
 
-        if (!ApplyPointEditNonDestructive(_selectedIndex, temperature, speed))
+        if (!ApplyPointEditWithPush(_points, _selectedIndex, temperature, speed))
             return;
 
         Redraw();
@@ -167,10 +196,13 @@ public partial class CustomFanCurveControl
         if (_points.Count <= FanCurve.MIN_POINTS || _selectedIndex < 0 || _selectedIndex >= _points.Count)
             return false;
 
+        HideInlineEditor();
         _points.RemoveAt(_selectedIndex);
         _selectedIndex = Math.Clamp(_selectedIndex, 0, _points.Count - 1);
         _hoveredIndex = -1;
         _draggingIndex = -1;
+        _draggingWholeCurve = false;
+        _dragStartPoints = null;
 
         Redraw();
         SelectedPointChanged?.Invoke(this, EventArgs.Empty);
@@ -179,13 +211,11 @@ public partial class CustomFanCurveControl
         return true;
     }
 
-    private (int minTemp, int maxTemp, int minSpeed, int maxSpeed) GetPointBounds(int index)
+    private (int minTemp, int maxTemp, int minSpeed, int maxSpeed) GetPointPushBounds(int index)
     {
-        var minTemp = index > 0 ? _points[index - 1].Temperature + 1 : FanCurve.MIN_TEMPERATURE;
-        var maxTemp = index < _points.Count - 1 ? _points[index + 1].Temperature - 1 : FanCurve.MAX_TEMPERATURE;
-        var minSpeed = index > 0 ? _points[index - 1].Speed : 0;
-        var maxSpeed = index < _points.Count - 1 ? _points[index + 1].Speed : 100;
-        return (minTemp, maxTemp, minSpeed, maxSpeed);
+        var minTemp = FanCurve.MIN_TEMPERATURE + index;
+        var maxTemp = FanCurve.MAX_TEMPERATURE - (_points.Count - 1 - index);
+        return (minTemp, maxTemp, 0, 100);
     }
 
     private bool AddPointAt(int temperature, int speed)
@@ -193,6 +223,7 @@ public partial class CustomFanCurveControl
         if (_points.Count >= FanCurve.MAX_POINTS)
             return false;
 
+        HideInlineEditor();
         temperature = Math.Clamp(temperature, FanCurve.MIN_TEMPERATURE, FanCurve.MAX_TEMPERATURE);
         speed = Math.Clamp(speed, 0, 100);
 
@@ -218,32 +249,149 @@ public partial class CustomFanCurveControl
     }
 
     /// <summary>
-    /// Clamps the edited point strictly between its neighbors' temperature and speed bounds
-    /// so dragging one point never pushes or ruins neighboring points.
+    /// FanControl-style monotonic push: moving a point smoothly pushes neighboring points
+    /// instead of getting blocked against them, preserving strict temperature order and non-decreasing speed.
     /// </summary>
-    private bool ApplyPointEditNonDestructive(int index, int temperature, int speed)
+    private static bool ApplyPointEditWithPush(List<FanCurvePoint> target, int index, int temperature, int speed)
     {
-        var (minTemp, maxTemp, minSpeed, maxSpeed) = GetPointBounds(index);
+        var minTemp = FanCurve.MIN_TEMPERATURE + index;
+        var maxTemp = FanCurve.MAX_TEMPERATURE - (target.Count - 1 - index);
 
         var clampedTemp = Math.Clamp(temperature, minTemp, maxTemp);
-        var clampedSpeed = Math.Clamp(speed, minSpeed, maxSpeed);
-        var updated = new FanCurvePoint(clampedTemp, clampedSpeed);
+        var clampedSpeed = Math.Clamp(speed, 0, 100);
 
-        if (_points[index] == updated)
-            return false;
+        var original = new List<FanCurvePoint>(target);
+        target[index] = new FanCurvePoint(clampedTemp, clampedSpeed);
 
-        _points[index] = updated;
-        return true;
+        // Push left neighbors down / left if needed
+        for (var i = index - 1; i >= 0; i--)
+        {
+            var next = target[i + 1];
+            var cur = target[i];
+            var newT = cur.Temperature >= next.Temperature ? Math.Max(FanCurve.MIN_TEMPERATURE, next.Temperature - 1) : cur.Temperature;
+            var newS = cur.Speed > next.Speed ? next.Speed : cur.Speed;
+            target[i] = new FanCurvePoint(newT, newS);
+        }
+
+        // Push right neighbors up / right if needed
+        for (var i = index + 1; i < target.Count; i++)
+        {
+            var prev = target[i - 1];
+            var cur = target[i];
+            var newT = cur.Temperature <= prev.Temperature ? Math.Min(FanCurve.MAX_TEMPERATURE, prev.Temperature + 1) : cur.Temperature;
+            var newS = cur.Speed < prev.Speed ? prev.Speed : cur.Speed;
+            target[i] = new FanCurvePoint(newT, newS);
+        }
+
+        for (var i = 0; i < target.Count; i++)
+        {
+            if (target[i] != original[i])
+                return true;
+        }
+
+        return false;
     }
 
     private static int Snap(int value, int step) => (int)Math.Round(value / (double)step) * step;
 
-    private static bool IsFineAdjustHeld() => (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+    private static bool IsGridSnapHeld() => (Keyboard.Modifiers & ModifierKeys.Control) != 0;
 
-    private void Canvas_SizeChanged(object sender, SizeChangedEventArgs e) => Redraw();
+    private void Canvas_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        HideInlineEditor();
+        Redraw();
+    }
+
+    private void ShowInlineEditor(int index)
+    {
+        if (index < 0 || index >= _points.Count)
+            return;
+
+        _inlineEditingIndex = index;
+        var p = _points[index];
+        _inlineTempBox.Text = p.Temperature.ToString();
+        _inlineSpeedBox.Text = p.Speed.ToString();
+        _inlineEditor.Visibility = Visibility.Visible;
+
+        _inlineEditor.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        var editorWidth = _inlineEditor.DesiredSize.Width;
+        var editorHeight = _inlineEditor.DesiredSize.Height;
+
+        var anchor = PointToCanvas(p.Temperature, p.Speed);
+        var left = Math.Clamp(anchor.X - editorWidth / 2, 6, Math.Max(6, _canvas.ActualWidth - editorWidth - 6));
+        var top = anchor.Y - editorHeight - 16;
+        if (top < 6)
+            top = Math.Min(Math.Max(6, _canvas.ActualHeight - editorHeight - 6), anchor.Y + 16);
+
+        Canvas.SetLeft(_inlineEditor, left);
+        Canvas.SetTop(_inlineEditor, top);
+
+        _inlineSpeedBox.Focus();
+        _inlineSpeedBox.SelectAll();
+    }
+
+    private void HideInlineEditor()
+    {
+        _inlineEditingIndex = -1;
+        if (_inlineEditor is not null)
+            _inlineEditor.Visibility = Visibility.Collapsed;
+    }
+
+    private void CommitInlineEditor()
+    {
+        if (_inlineEditingIndex < 0 || _inlineEditingIndex >= _points.Count)
+        {
+            HideInlineEditor();
+            return;
+        }
+
+        var index = _inlineEditingIndex;
+        var current = _points[index];
+        var temp = int.TryParse(_inlineTempBox.Text.Trim(), out var parsedTemp) ? parsedTemp : current.Temperature;
+        var speed = int.TryParse(_inlineSpeedBox.Text.Trim(), out var parsedSpeed) ? parsedSpeed : current.Speed;
+
+        HideInlineEditor();
+        _selectedIndex = index;
+
+        if (ApplyPointEditWithPush(_points, index, temp, speed))
+        {
+            Redraw();
+            SelectedPointChanged?.Invoke(this, EventArgs.Empty);
+            CurveChanged?.Invoke(this, EventArgs.Empty);
+            CurveCommitted?.Invoke(this, EventArgs.Empty);
+        }
+        else
+        {
+            Redraw();
+        }
+    }
+
+    private void InlineEditorApply_Click(object sender, RoutedEventArgs e) => CommitInlineEditor();
+
+    private void InlineEditor_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => e.Handled = true;
+
+    private void UserControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => e.Handled = true;
+
+    private void InlineEditor_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            CommitInlineEditor();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            HideInlineEditor();
+            Focus();
+            e.Handled = true;
+        }
+    }
 
     private void UserControl_KeyDown(object sender, KeyEventArgs e)
     {
+        if (_inlineEditingIndex >= 0)
+            return;
+
         if (_selectedIndex < 0 || _selectedIndex >= _points.Count)
             return;
 
@@ -255,8 +403,9 @@ public partial class CustomFanCurveControl
         }
 
         var current = _points[_selectedIndex];
-        var stepTemp = IsFineAdjustHeld() ? 1 : SNAP_TEMP;
-        var stepSpeed = IsFineAdjustHeld() ? 1 : SNAP_SPEED;
+        var fastStep = IsGridSnapHeld() || (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+        var stepTemp = fastStep ? SNAP_TEMP : 1;
+        var stepSpeed = fastStep ? SNAP_SPEED : 1;
 
         switch (e.Key)
         {
@@ -279,9 +428,44 @@ public partial class CustomFanCurveControl
         }
     }
 
+    private void Canvas_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (_inlineEditingIndex >= 0 || _draggingIndex >= 0 || _draggingWholeCurve)
+            return;
+
+        var pos = e.GetPosition(_canvas);
+        var hitIndex = HitTestPoint(pos);
+        if (hitIndex < 0)
+            return;
+
+        e.Handled = true;
+        Focus();
+
+        _selectedIndex = hitIndex;
+        var step = IsGridSnapHeld() ? SNAP_SPEED : 1;
+        var delta = e.Delta > 0 ? step : -step;
+        var cur = _points[hitIndex];
+
+        if (ApplyPointEditWithPush(_points, hitIndex, cur.Temperature, cur.Speed + delta))
+        {
+            Redraw();
+            SelectedPointChanged?.Invoke(this, EventArgs.Empty);
+            CurveChanged?.Invoke(this, EventArgs.Empty);
+            CurveCommitted?.Invoke(this, EventArgs.Empty);
+        }
+        else
+        {
+            Redraw();
+            SelectedPointChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        e.Handled = true;
         Focus();
+        Keyboard.Focus(this);
+        HideInlineEditor();
 
         var pos = e.GetPosition(_canvas);
         var hitIndex = HitTestPoint(pos);
@@ -289,8 +473,28 @@ public partial class CustomFanCurveControl
         if (hitIndex >= 0)
         {
             _selectedIndex = hitIndex;
-            _draggingIndex = hitIndex;
             _hoveredIndex = hitIndex;
+
+            // Double-click on a point opens inline numeric editor (FanControl style)
+            if (e.ClickCount == 2)
+            {
+                _draggingIndex = -1;
+                _draggingWholeCurve = false;
+                _dragModified = false;
+                _dragStartPoints = null;
+                if (_canvas.IsMouseCaptured)
+                    _canvas.ReleaseMouseCapture();
+
+                Redraw();
+                SelectedPointChanged?.Invoke(this, EventArgs.Empty);
+                ShowInlineEditor(hitIndex);
+                return;
+            }
+
+            _draggingIndex = hitIndex;
+            _draggingWholeCurve = false;
+            _dragModified = false;
+            _dragStartPoints = [.. _points];
             _canvas.Cursor = Cursors.SizeAll;
             _canvas.CaptureMouse();
             Redraw();
@@ -298,13 +502,28 @@ public partial class CustomFanCurveControl
             return;
         }
 
-        // Only double-click on empty plot area adds a new point — single click never spawns accidental points.
+        // Double-click on empty plot area adds a new point at 1°C/1% precision (Ctrl snaps to 5)
         if (e.ClickCount == 2 && _points.Count < FanCurve.MAX_POINTS)
         {
             var (rawTemp, rawSpeed) = CanvasToPoint(pos);
-            var temp = IsFineAdjustHeld() ? rawTemp : Snap(rawTemp, SNAP_TEMP);
-            var speed = IsFineAdjustHeld() ? rawSpeed : Snap(rawSpeed, SNAP_SPEED);
+            var temp = IsGridSnapHeld() ? Snap(rawTemp, SNAP_TEMP) : rawTemp;
+            var speed = IsGridSnapHeld() ? Snap(rawSpeed, SNAP_SPEED) : rawSpeed;
             AddPointAt(temp, speed);
+            return;
+        }
+
+        // Single-click drag on curve line shifts the entire curve vertically
+        if (e.ClickCount == 1 && DistanceToCurve(pos) <= CURVE_HIT_DISTANCE)
+        {
+            _draggingIndex = -1;
+            _draggingWholeCurve = true;
+            _dragModified = false;
+            _wholeCurveDeltaSpeed = 0;
+            _dragStartCanvasPos = pos;
+            _dragStartPoints = [.. _points];
+            _canvas.Cursor = Cursors.SizeNS;
+            _canvas.CaptureMouse();
+            Redraw();
         }
     }
 
@@ -313,16 +532,60 @@ public partial class CustomFanCurveControl
         var pos = e.GetPosition(_canvas);
         _cursorCanvasPos = pos;
 
-        if (_draggingIndex >= 0 && e.LeftButton == MouseButtonState.Pressed)
+        if (_draggingWholeCurve && _dragStartPoints is not null && e.LeftButton == MouseButtonState.Pressed)
         {
-            var (rawTemp, rawSpeed) = CanvasToPoint(pos);
-            var temp = IsFineAdjustHeld() ? rawTemp : Snap(rawTemp, SNAP_TEMP);
-            var speed = IsFineAdjustHeld() ? rawSpeed : Snap(rawSpeed, SNAP_SPEED);
+            e.Handled = true;
+            var plotHeight = Math.Max(1, _canvas.ActualHeight - 2 * PADDING_Y);
+            var rawDelta = (int)Math.Round((_dragStartCanvasPos.Y - pos.Y) / plotHeight * 100.0);
+            var deltaSpeed = IsGridSnapHeld() ? Snap(rawDelta, SNAP_SPEED) : rawDelta;
+            _wholeCurveDeltaSpeed = deltaSpeed;
 
-            if (ApplyPointEditNonDestructive(_draggingIndex, temp, speed))
+            var changed = false;
+            for (var i = 0; i < _points.Count && i < _dragStartPoints.Count; i++)
             {
+                var updated = _dragStartPoints[i] with { Speed = Math.Clamp(_dragStartPoints[i].Speed + deltaSpeed, 0, 100) };
+                if (_points[i] != updated)
+                {
+                    _points[i] = updated;
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                _dragModified = true;
                 CurveChanged?.Invoke(this, EventArgs.Empty);
-                SelectedPointChanged?.Invoke(this, EventArgs.Empty);
+            }
+
+            Redraw();
+            return;
+        }
+
+        if (_draggingIndex >= 0 && _dragStartPoints is not null && e.LeftButton == MouseButtonState.Pressed)
+        {
+            e.Handled = true;
+            var (rawTemp, rawSpeed) = CanvasToPoint(pos);
+            var temp = IsGridSnapHeld() ? Snap(rawTemp, SNAP_TEMP) : rawTemp;
+            var speed = IsGridSnapHeld() ? Snap(rawSpeed, SNAP_SPEED) : rawSpeed;
+
+            // Evaluate monotonic push from drag-start snapshot so pulling back restores bumped neighbors
+            var working = new List<FanCurvePoint>(_dragStartPoints);
+            ApplyPointEditWithPush(working, _draggingIndex, temp, speed);
+
+            var changed = false;
+            for (var i = 0; i < _points.Count; i++)
+            {
+                if (_points[i] != working[i])
+                {
+                    _points[i] = working[i];
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                _dragModified = true;
+                CurveChanged?.Invoke(this, EventArgs.Empty);
             }
 
             Redraw();
@@ -330,27 +593,54 @@ public partial class CustomFanCurveControl
         }
 
         var hitIndex = HitTestPoint(pos);
+        var hitCurve = hitIndex < 0 && DistanceToCurve(pos) <= CURVE_HIT_DISTANCE;
         _hoveredIndex = hitIndex;
-        _canvas.Cursor = hitIndex >= 0 ? Cursors.Hand : Cursors.Arrow;
+        _hoveredCurve = hitCurve;
+
+        if (hitIndex >= 0)
+            _canvas.Cursor = Cursors.Hand;
+        else if (hitCurve)
+            _canvas.Cursor = Cursors.SizeNS;
+        else
+            _canvas.Cursor = Cursors.Arrow;
+
         Redraw();
     }
 
     private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        if (_draggingIndex < 0)
+        e.Handled = true;
+        FinishDrag(releaseCapture: true);
+    }
+
+    private void Canvas_LostMouseCapture(object sender, MouseEventArgs e) => FinishDrag(releaseCapture: false);
+
+    private void FinishDrag(bool releaseCapture)
+    {
+        if (_draggingIndex < 0 && !_draggingWholeCurve)
             return;
 
+        var wasModified = _dragModified;
         _draggingIndex = -1;
-        if (_canvas.IsMouseCaptured)
+        _draggingWholeCurve = false;
+        _dragModified = false;
+        _wholeCurveDeltaSpeed = 0;
+        _dragStartPoints = null;
+
+        if (releaseCapture && _canvas.IsMouseCaptured)
             _canvas.ReleaseMouseCapture();
 
-        _canvas.Cursor = _hoveredIndex >= 0 ? Cursors.Hand : Cursors.Arrow;
+        _canvas.Cursor = _hoveredIndex >= 0 ? Cursors.Hand : (_hoveredCurve ? Cursors.SizeNS : Cursors.Arrow);
         Redraw();
-        CurveCommitted?.Invoke(this, EventArgs.Empty);
+
+        if (wasModified)
+            CurveCommitted?.Invoke(this, EventArgs.Empty);
     }
 
     private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
+        e.Handled = true;
+        HideInlineEditor();
         var pos = e.GetPosition(_canvas);
         var hitIndex = HitTestPoint(pos);
         if (hitIndex < 0 || _points.Count <= FanCurve.MIN_POINTS)
@@ -360,13 +650,16 @@ public partial class CustomFanCurveControl
         RemoveSelectedPoint();
     }
 
+    private void Canvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e) => e.Handled = true;
+
     private void Canvas_MouseLeave(object sender, MouseEventArgs e)
     {
-        if (_draggingIndex >= 0)
+        if (_draggingIndex >= 0 || _draggingWholeCurve)
             return;
 
         _cursorCanvasPos = null;
         _hoveredIndex = -1;
+        _hoveredCurve = false;
         _canvas.Cursor = Cursors.Arrow;
         Redraw();
     }
@@ -391,6 +684,65 @@ public partial class CustomFanCurveControl
         }
 
         return bestIndex;
+    }
+
+    private double DistanceToCurve(Point pos)
+    {
+        if (_points.Count == 0)
+            return double.PositiveInfinity;
+
+        var polyline = BuildMainCurveCanvasPoints();
+        var minDist = double.PositiveInfinity;
+
+        for (var i = 0; i < polyline.Count - 1; i++)
+        {
+            var a = polyline[i];
+            var b = polyline[i + 1];
+            var dx = b.X - a.X;
+            var dy = b.Y - a.Y;
+            var lenSq = dx * dx + dy * dy;
+
+            var t = lenSq > 0 ? Math.Clamp(((pos.X - a.X) * dx + (pos.Y - a.Y) * dy) / lenSq, 0, 1) : 0;
+            var projX = a.X + t * dx;
+            var projY = a.Y + t * dy;
+            var px = pos.X - projX;
+            var py = pos.Y - projY;
+            var dist = Math.Sqrt(px * px + py * py);
+            if (dist < minDist)
+                minDist = dist;
+        }
+
+        return minDist;
+    }
+
+    private List<Point> BuildMainCurveCanvasPoints()
+    {
+        var list = new List<Point>(_points.Count + 2)
+        {
+            PointToCanvas(FanCurve.MIN_TEMPERATURE, _points[0].Speed)
+        };
+        foreach (var pt in _points)
+            list.Add(PointToCanvas(pt.Temperature, pt.Speed));
+        list.Add(PointToCanvas(FanCurve.MAX_TEMPERATURE, _points[^1].Speed));
+        return list;
+    }
+
+    private List<Point> BuildCoolingCurveCanvasPoints()
+    {
+        var list = new List<Point>(_points.Count + 2)
+        {
+            PointToCanvas(FanCurve.MIN_TEMPERATURE, FanCurve.GetSpeed(_points, FanCurve.MIN_TEMPERATURE + _hysteresis))
+        };
+
+        foreach (var pt in _points)
+        {
+            var shiftedTemp = pt.Temperature - _hysteresis;
+            if (shiftedTemp is > FanCurve.MIN_TEMPERATURE and < FanCurve.MAX_TEMPERATURE)
+                list.Add(PointToCanvas(shiftedTemp, pt.Speed));
+        }
+
+        list.Add(PointToCanvas(FanCurve.MAX_TEMPERATURE, FanCurve.GetSpeed(_points, FanCurve.MAX_TEMPERATURE + _hysteresis)));
+        return list;
     }
 
     private Point PointToCanvas(double temperature, double speed)
@@ -434,6 +786,7 @@ public partial class CustomFanCurveControl
         var secondaryTextBrush = GetBrush("TextFillColorSecondaryBrush", Colors.LightGray);
         var surfaceBrush = GetBrush("SolidBackgroundFillColorBaseBrush", Color.FromRgb(32, 32, 32));
         var borderBrush = GetBrush("ControlElevationBorderBrush", Colors.Gray);
+        var accentColor = accentBrush is SolidColorBrush scb ? scb.Color : Colors.DeepSkyBlue;
 
         // 1. Grid lines (10% BIOS levels horizontally, 5°C/10°C vertically)
         for (var speed = 0; speed <= 100; speed += 10)
@@ -470,29 +823,10 @@ public partial class CustomFanCurveControl
             });
         }
 
-        // 2. Subtle cursor / drag crosshair (Afterburner style)
-        if (_draggingIndex >= 0 && _draggingIndex < _points.Count)
-        {
-            var dp = _points[_draggingIndex];
-            DrawCrosshair(PointToCanvas(dp.Temperature, dp.Speed), accentBrush, 0.55);
-        }
-        else if (_cursorCanvasPos is { } cur)
-        {
-            var clampedX = Math.Clamp(cur.X, PADDING_X, _canvas.ActualWidth - PADDING_X);
-            var clampedY = Math.Clamp(cur.Y, PADDING_Y, _canvas.ActualHeight - PADDING_Y);
-            DrawCrosshair(new Point(clampedX, clampedY), gridBrush, 0.35);
-        }
+        // 2. Build main heating curve polyline
+        var curvePoints = BuildMainCurveCanvasPoints();
 
-        // 3. Build full curve polyline including flat extensions to MIN_TEMPERATURE and MAX_TEMPERATURE
-        var curvePoints = new List<Point>
-        {
-            PointToCanvas(FanCurve.MIN_TEMPERATURE, _points[0].Speed)
-        };
-        foreach (var pt in _points)
-            curvePoints.Add(PointToCanvas(pt.Temperature, pt.Speed));
-        curvePoints.Add(PointToCanvas(FanCurve.MAX_TEMPERATURE, _points[^1].Speed));
-
-        // 4. Area fill under curve
+        // 3. Area fill under curve
         var bottomLeft = PointToCanvas(FanCurve.MIN_TEMPERATURE, 0);
         var bottomRight = PointToCanvas(FanCurve.MAX_TEMPERATURE, 0);
         var fillPoints = new PointCollection { bottomLeft };
@@ -500,18 +834,58 @@ public partial class CustomFanCurveControl
             fillPoints.Add(cp);
         fillPoints.Add(bottomRight);
 
-        var fillColor = accentBrush is SolidColorBrush scb ? scb.Color : Colors.DeepSkyBlue;
         _canvas.Children.Add(new Polygon
         {
             Points = fillPoints,
             IsHitTestVisible = false,
             Fill = new LinearGradientBrush(
-                Color.FromArgb(70, fillColor.R, fillColor.G, fillColor.B),
-                Color.FromArgb(8, fillColor.R, fillColor.G, fillColor.B),
+                Color.FromArgb(60, accentColor.R, accentColor.G, accentColor.B),
+                Color.FromArgb(6, accentColor.R, accentColor.G, accentColor.B),
                 90)
         });
 
-        // 5. Curve stroke
+        // 4. FanControl-style hysteresis band & dashed cooling-down curve
+        if (_hysteresis > 0 && _points.Count >= 2)
+        {
+            var coolingPoints = BuildCoolingCurveCanvasPoints();
+
+            var bandPoints = new PointCollection();
+            foreach (var cp in curvePoints)
+                bandPoints.Add(cp);
+            for (var i = coolingPoints.Count - 1; i >= 0; i--)
+                bandPoints.Add(coolingPoints[i]);
+
+            _canvas.Children.Add(new Polygon
+            {
+                Points = bandPoints,
+                IsHitTestVisible = false,
+                Fill = new SolidColorBrush(Color.FromArgb(38, accentColor.R, accentColor.G, accentColor.B))
+            });
+
+            var coolingFigure = new PathFigure { StartPoint = coolingPoints[0] };
+            foreach (var cp in coolingPoints.Skip(1))
+                coolingFigure.Segments.Add(new LineSegment(cp, true));
+
+            _canvas.Children.Add(new Path
+            {
+                Stroke = accentBrush,
+                StrokeThickness = 1.5,
+                StrokeDashArray = [4, 4],
+                Opacity = 0.55,
+                StrokeLineJoin = PenLineJoin.Round,
+                IsHitTestVisible = false,
+                Data = new PathGeometry { Figures = [coolingFigure] }
+            });
+        }
+
+        // 5. Subtle drag guide crosshair (only while dragging a point so idle canvas stays clean)
+        if (_draggingIndex >= 0 && _draggingIndex < _points.Count)
+        {
+            var dp = _points[_draggingIndex];
+            DrawCrosshair(PointToCanvas(dp.Temperature, dp.Speed), accentBrush, 0.55);
+        }
+
+        // 6. Main curve stroke (thickens subtly when hovering/dragging the whole curve)
         var figure = new PathFigure { StartPoint = curvePoints[0] };
         foreach (var cp in curvePoints.Skip(1))
             figure.Segments.Add(new LineSegment(cp, true));
@@ -519,7 +893,7 @@ public partial class CustomFanCurveControl
         _canvas.Children.Add(new Path
         {
             Stroke = accentBrush,
-            StrokeThickness = 2.5,
+            StrokeThickness = _draggingWholeCurve || (_hoveredCurve && _hoveredIndex < 0) ? 3.5 : 2.5,
             StrokeLineJoin = PenLineJoin.Round,
             StrokeStartLineCap = PenLineCap.Round,
             StrokeEndLineCap = PenLineCap.Round,
@@ -527,7 +901,7 @@ public partial class CustomFanCurveControl
             Data = new PathGeometry { Figures = [figure] }
         });
 
-        // 6. Critical temperature threshold vertical line
+        // 7. Critical temperature threshold vertical line
         if (_criticalTemperature is >= FanCurve.MIN_TEMPERATURE and <= FanCurve.MAX_TEMPERATURE)
         {
             var cTop = PointToCanvas(_criticalTemperature, 100);
@@ -562,7 +936,7 @@ public partial class CustomFanCurveControl
             _canvas.Children.Add(critLabel);
         }
 
-        // 7. Live temperature & active target dot
+        // 8. Live temperature & active target dot
         if (_liveTemperature > 0)
         {
             var clampedTemp = Math.Clamp(_liveTemperature, FanCurve.MIN_TEMPERATURE, FanCurve.MAX_TEMPERATURE);
@@ -610,7 +984,7 @@ public partial class CustomFanCurveControl
             _canvas.Children.Add(liveDot);
         }
 
-        // 8. Control point handles with clear hover/selected halos
+        // 9. Control point handles
         for (var i = 0; i < _points.Count; i++)
         {
             var pt = PointToCanvas(_points[i].Temperature, _points[i].Speed);
@@ -649,7 +1023,38 @@ public partial class CustomFanCurveControl
             _canvas.Children.Add(handle);
         }
 
-        // 9. Floating callout for dragged/hovered point (or subtle coordinate readout when hovering empty plot)
+        // 10. Floating callout (whole-curve drag / dragged or hovered point / subtle cursor readout)
+        if (_draggingWholeCurve && _cursorCanvasPos is { } wholePos)
+        {
+            var sign = _wholeCurveDeltaSpeed > 0 ? "+" : string.Empty;
+            var badge = new Border
+            {
+                Background = surfaceBrush,
+                BorderBrush = accentBrush,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(8, 4, 8, 4),
+                IsHitTestVisible = false,
+                Child = new TextBlock
+                {
+                    Text = $"{sign}{_wholeCurveDeltaSpeed}%",
+                    FontSize = 12,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = primaryTextBrush
+                }
+            };
+            badge.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var left = Math.Clamp(wholePos.X - badge.DesiredSize.Width / 2, 6, Math.Max(6, _canvas.ActualWidth - badge.DesiredSize.Width - 6));
+            var top = Math.Clamp(wholePos.Y - badge.DesiredSize.Height - 14, 6, Math.Max(6, _canvas.ActualHeight - badge.DesiredSize.Height - 6));
+            Canvas.SetLeft(badge, left);
+            Canvas.SetTop(badge, top);
+            _canvas.Children.Add(badge);
+            return;
+        }
+
+        if (_inlineEditingIndex >= 0)
+            return;
+
         var calloutIndex = _draggingIndex >= 0 ? _draggingIndex : _hoveredIndex;
         if (calloutIndex >= 0 && calloutIndex < _points.Count)
         {
@@ -713,8 +1118,8 @@ public partial class CustomFanCurveControl
         else if (_cursorCanvasPos is { } cur)
         {
             var (rawTemp, rawSpeed) = CanvasToPoint(cur);
-            var temp = IsFineAdjustHeld() ? rawTemp : Snap(rawTemp, SNAP_TEMP);
-            var speed = IsFineAdjustHeld() ? rawSpeed : Snap(rawSpeed, SNAP_SPEED);
+            var temp = IsGridSnapHeld() ? Snap(rawTemp, SNAP_TEMP) : rawTemp;
+            var speed = IsGridSnapHeld() ? Snap(rawSpeed, SNAP_SPEED) : rawSpeed;
             var hint = new Border
             {
                 Background = surfaceBrush,

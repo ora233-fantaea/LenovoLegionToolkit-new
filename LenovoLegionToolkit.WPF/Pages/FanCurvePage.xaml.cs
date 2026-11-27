@@ -93,6 +93,7 @@ public partial class FanCurvePage
             _criticalTempBox.Value = Math.Clamp(store.CriticalTemperature, 70, 105);
 
             _curveControl.CriticalTemperature = Math.Clamp(store.CriticalTemperature, 70, 105);
+            _curveControl.Hysteresis = Math.Clamp(store.Hysteresis, 0, 20);
             _curveControl.SetPoints(store.Points);
 
             SetPendingChanges(false);
@@ -259,9 +260,25 @@ public partial class FanCurvePage
 
     private void RebuildPointPills()
     {
-        _pointsPanel.Children.Clear();
         var points = _curveControl.Points;
         var selected = _curveControl.SelectedIndex;
+
+        if (_pointsPanel.Children.Count == points.Count)
+        {
+            for (var i = 0; i < points.Count; i++)
+            {
+                if (_pointsPanel.Children[i] is Button existing)
+                {
+                    var pt = points[i];
+                    existing.Content = $"#{i + 1}  {pt.Temperature}°C · {pt.Speed}%";
+                    existing.Appearance = i == selected ? ControlAppearance.Primary : ControlAppearance.Secondary;
+                }
+            }
+
+            return;
+        }
+
+        _pointsPanel.Children.Clear();
 
         for (var i = 0; i < points.Count; i++)
         {
@@ -554,6 +571,7 @@ public partial class FanCurvePage
             if (_settings.Store.Hysteresis != hysteresis)
             {
                 _settings.Store.Hysteresis = hysteresis;
+                _curveControl.Hysteresis = hysteresis;
                 changed = true;
             }
         }
