@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using LenovoLegionToolkit.Lib.Controllers;
 using LenovoLegionToolkit.Lib.Controllers.GodMode;
 using LenovoLegionToolkit.Lib.Extensions;
+using LenovoLegionToolkit.Lib.Features;
 using LenovoLegionToolkit.Lib.Messaging;
 using LenovoLegionToolkit.Lib.Messaging.Messages;
 using LenovoLegionToolkit.Lib.Overclocking.Amd;
+using LenovoLegionToolkit.Lib.Settings;
+using LenovoLegionToolkit.Lib.System;
 using LenovoLegionToolkit.Lib.System.Management;
 using LenovoLegionToolkit.Lib.Utils;
 
@@ -16,7 +19,9 @@ namespace LenovoLegionToolkit.Lib.Listeners;
 public class PowerModeListener(
     GodModeController godModeController,
     WindowsPowerModeController windowsPowerModeController,
-    WindowsPowerPlanController windowsPowerPlanController)
+    WindowsPowerPlanController windowsPowerPlanController,
+    ThermalModeListener thermalModeListener,
+    ApplicationSettings applicationSettings)
     : AbstractWMIListener<PowerModeListener.ChangedEventArgs, PowerModeState, int>(WMI.LenovoGameZoneSmartFanModeEvent.Listen), INotifyingListener<PowerModeListener.ChangedEventArgs, PowerModeState>
 {
     public class ChangedEventArgs(PowerModeState state) : EventArgs
@@ -46,7 +51,7 @@ public class PowerModeListener(
     }
 
     public Task ChangeAsync(PowerModeState value, Func<Task> change, bool applyGodModePreset = true) =>
-        ProcessChangeAsync(value, change, applyGodModePreset, force: true, showNotification: false);
+        ProcessChangeAsync(value, change, applyGodModePreset, force: true, showNotification: true);
 
     private async Task ProcessChangeAsync(PowerModeState value, Func<Task>? change = null,
         bool applyGodModePreset = true, bool force = false, bool showNotification = true)
@@ -57,6 +62,11 @@ public class PowerModeListener(
             if (!force && _lastState == value)
             {
                 return;
+            }
+
+            if (change is null && showNotification && applicationSettings.Store.GodModeFnQSoftwareCycle)
+            {
+                value = await TryExtendFnQCycleToGodModeAsync(value).ConfigureAwait(false);
             }
 
             _lastState = null;
@@ -80,10 +90,61 @@ public class PowerModeListener(
         }
     }
 
+    private async Task<PowerModeState> TryExtendFnQCycleToGodModeAsync(PowerModeState incomingValue)
+    {
+        try
+        {
+            if (incomingValue != PowerModeState.Quiet)
+                return incomingValue;
+
+            var mi = await Compatibility.GetMachineInformationAsync().ConfigureAwait(false);
+            if (!mi.Properties.SupportsGodMode)
+                return incomingValue;
+
+            if (mi.Features[CapabilityID.GodModeFnQSwitchable])
+            {
+                try
+                {
+                    if (await WMI.LenovoOtherMethod.GetFeatureValueAsync(CapabilityID.GodModeFnQSwitchable).ConfigureAwait(false) == 1)
+                        return incomingValue;
+                }
+                catch { /* Fall through to software cycle */ }
+            }
+
+            var lastBeforeWrap = mi.Properties.SupportsExtremeMode ? PowerModeState.Extreme : PowerModeState.Performance;
+            if (_lastState != lastBeforeWrap)
+                return incomingValue;
+
+            var allowOnBattery = IoCContainer.Resolve<PowerModeFeature>().AllowAllPowerModesOnBattery;
+            if (!allowOnBattery && await Power.IsPowerAdapterConnectedAsync().ConfigureAwait(false) is PowerAdapterStatus.Disconnected)
+                return incomingValue;
+
+            Log.Instance.Trace($"Fn+Q software cycle: intercepting {lastBeforeWrap} -> Quiet and switching to GodMode.");
+            thermalModeListener.SuppressNext();
+            await WMI.LenovoGameZoneData.SetSmartFanModeAsync((int)PowerModeState.GodMode + 1).ConfigureAwait(false);
+            return PowerModeState.GodMode;
+        }
+        catch (Exception ex)
+        {
+            Log.Instance.Trace($"Failed to extend Fn+Q cycle to GodMode.", ex);
+            return incomingValue;
+        }
+    }
+
     protected override async Task<bool> CanStartAsync()
     {
         var mi = await Compatibility.GetMachineInformationAsync().ConfigureAwait(false);
-        return Compatibility.IsLegion(mi.LegionSeries);
+        if (!Compatibility.IsLegion(mi.LegionSeries))
+            return false;
+
+        try
+        {
+            var current = await WMI.LenovoGameZoneData.GetSmartFanModeAsync().ConfigureAwait(false);
+            _lastState = GetValue(current);
+        }
+        catch { /* Ignore */ }
+
+        return true;
     }
 
     private async Task ChangeDependenciesAsync(PowerModeState value, bool applyGodModePreset = true)

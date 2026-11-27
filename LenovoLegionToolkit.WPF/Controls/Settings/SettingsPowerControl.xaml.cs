@@ -41,7 +41,13 @@ public partial class SettingsPowerControl
             if (mi.Features[CapabilityID.GodModeFnQSwitchable])
             {
                 _godModeFnQSwitchableCard.Visibility = Visibility.Visible;
-                _godModeFnQSwitchableToggle.IsChecked = await WMI.LenovoOtherMethod.GetFeatureValueAsync(CapabilityID.GodModeFnQSwitchable) == 1;
+                var hwEnabled = await WMI.LenovoOtherMethod.GetFeatureValueAsync(CapabilityID.GodModeFnQSwitchable) == 1;
+                _godModeFnQSwitchableToggle.IsChecked = hwEnabled || _settings.Store.GodModeFnQSoftwareCycle;
+            }
+            else if (mi.Properties.SupportsGodMode)
+            {
+                _godModeFnQSwitchableCard.Visibility = Visibility.Visible;
+                _godModeFnQSwitchableToggle.IsChecked = _settings.Store.GodModeFnQSoftwareCycle;
             }
             else
             {
@@ -115,7 +121,19 @@ public partial class SettingsPowerControl
 
         _godModeFnQSwitchableToggle.IsEnabled = false;
 
-        await WMI.LenovoOtherMethod.SetFeatureValueAsync(CapabilityID.GodModeFnQSwitchable, state.Value ? 1 : 0);
+        _settings.Store.GodModeFnQSoftwareCycle = state.Value;
+        _settings.SynchronizeStore();
+
+        try
+        {
+            var mi = await Compatibility.GetMachineInformationAsync();
+            if (mi.Features[CapabilityID.GodModeFnQSwitchable])
+                await WMI.LenovoOtherMethod.SetFeatureValueAsync(CapabilityID.GodModeFnQSwitchable, state.Value ? 1 : 0);
+        }
+        catch (Exception ex)
+        {
+            Log.Instance.Trace($"Failed to set hardware GodModeFnQSwitchable, using software cycle fallback.", ex);
+        }
 
         _godModeFnQSwitchableToggle.IsEnabled = true;
     }
