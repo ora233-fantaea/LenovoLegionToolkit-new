@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using LenovoLegionToolkit.Lib;
+using LenovoLegionToolkit.Lib.Extensions;
 using LenovoLegionToolkit.Lib.Messaging;
 using LenovoLegionToolkit.Lib.Messaging.Messages;
 using LenovoLegionToolkit.Lib.Settings;
@@ -192,7 +193,7 @@ public class NotificationsManager
                 hasIconOverride = true;
             }
 
-            var chibiImageUri = hasIconOverride ? null : GetDefaultChibiImageUri(notification.Type);
+            var chibiImageUri = hasIconOverride ? null : GetDefaultChibiImageUri(notification);
 
             if (notification.Overrides?.ColorOverride != null)
                 symbolTransform = si => si.Foreground = new SolidColorBrush(notification.Overrides.ColorOverride.Value.ToColor());
@@ -276,7 +277,7 @@ public class NotificationsManager
         _windows.Add(nw);
     }
 
-    private static string? GetDefaultChibiImageUri(NotificationType type) => type switch
+    private static string? GetDefaultChibiImageUri(NotificationMessage notification) => notification.Type switch
     {
         NotificationType.PowerModeQuiet or NotificationType.ITSModeAuto => "pack://application:,,,/Assets/Notifications/quiet.png",
         NotificationType.PowerModeBalance or NotificationType.ITSModeCool => "pack://application:,,,/Assets/Notifications/balance.png",
@@ -292,8 +293,32 @@ public class NotificationsManager
         NotificationType.FnLockOff => "pack://application:,,,/Assets/Notifications/fnlock_off.png",
         NotificationType.NumLockOn => "pack://application:,,,/Assets/Notifications/numlock_on.png",
         NotificationType.NumLockOff => "pack://application:,,,/Assets/Notifications/numlock_off.png",
+        NotificationType.WhiteKeyboardBacklightChanged => IsWhiteBacklightLow(notification.Args)
+            ? "pack://application:,,,/Assets/Notifications/kbd_backlight_low.png"
+            : "pack://application:,,,/Assets/Notifications/kbd_backlight_on.png",
+        NotificationType.WhiteKeyboardBacklightChangedSpecial => "pack://application:,,,/Assets/Notifications/kbd_backlight_on.png",
+        NotificationType.RGBKeyboardBacklightChanged or NotificationType.SpectrumBacklightChanged or NotificationType.SpectrumBacklightPresetChanged => "pack://application:,,,/Assets/Notifications/kbd_backlight_rgb.png",
+        NotificationType.WhiteKeyboardBacklightOff or NotificationType.RGBKeyboardBacklightOff or NotificationType.SpectrumBacklightOff => "pack://application:,,,/Assets/Notifications/kbd_backlight_off.png",
+        NotificationType.PanelLogoLightingOn => "pack://application:,,,/Assets/Notifications/logo_light_on.png",
+        NotificationType.PanelLogoLightingOff => "pack://application:,,,/Assets/Notifications/logo_light_off.png",
+        NotificationType.PortLightingOn => "pack://application:,,,/Assets/Notifications/port_light_on.png",
+        NotificationType.PortLightingOff => "pack://application:,,,/Assets/Notifications/port_light_off.png",
         _ => null,
     };
+
+    private static bool IsWhiteBacklightLow(object[]? args)
+    {
+        if (args is null || args.Length == 0)
+            return false;
+
+        if (args[0] is WhiteKeyboardBacklightState state)
+            return state == WhiteKeyboardBacklightState.Low;
+
+        if (args[0] is string text)
+            return string.Equals(text, WhiteKeyboardBacklightState.Low.GetDisplayName(), StringComparison.OrdinalIgnoreCase);
+
+        return false;
+    }
 
     internal static SymbolRegular GetDefaultSymbol(NotificationType type) => type switch
     {
